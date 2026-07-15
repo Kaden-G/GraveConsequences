@@ -1,0 +1,12 @@
+{
+  "name": "grave-consequences",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "A party murder-mystery deduction game — Trivia Murder Party meets Clue.",
+  "scripts": {
+    "validate": "node tools/validate.mjs",
+    "demo": "node tools/demo.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

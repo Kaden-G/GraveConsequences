@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+*.log
+.DS_Store
+.firebase/
+firebase-debug.log
+serviceAccount*.json
+.claude/settings.local.json

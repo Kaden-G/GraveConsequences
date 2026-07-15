@@ -1,0 +1,168 @@
+{
+  "schemaVersion": "1.0",
+  "type": "triviaPack",
+  "meta": {
+    "id": "general-knowledge-vol-1",
+    "name": "General Knowledge, Vol. 1",
+    "category": "general",
+    "note": "Fully decoupled from any case. The engine dispenses the next case clue on a correct answer regardless of which question it was \u2014 so any TriviaPack plays with any CasePack. Enable multiple packs at once for a larger pool. The pool must hold at least as many questions as the case has clues to dispense; otherwise the loader draws across packs or recycles."
+  },
+  "questions": [
+    {
+      "id": "gk_planet",
+      "prompt": "What is the largest planet in our solar system?",
+      "options": [
+        "Jupiter",
+        "Saturn",
+        "Neptune",
+        "Earth"
+      ],
+      "answerIndex": 0,
+      "difficulty": "easy"
+    },
+    {
+      "id": "gk_violin",
+      "prompt": "How many strings does a standard violin have?",
+      "options": [
+        "Six",
+        "Four",
+        "Five",
+        "Three"
+      ],
+      "answerIndex": 1,
+      "difficulty": "easy"
+    },
+    {
+      "id": "gk_gold",
+      "prompt": "What is the chemical symbol for gold?",
+      "options": [
+        "Ag",
+        "Au",
+        "Gd",
+        "Go"
+      ],
+      "answerIndex": 1,
+      "difficulty": "medium"
+    },
+    {
+      "id": "gk_reef",
+      "prompt": "Which country is home to the Great Barrier Reef?",
+      "options": [
+        "Brazil",
+        "Indonesia",
+        "Australia",
+        "Mexico"
+      ],
+      "answerIndex": 2,
+      "difficulty": "easy"
+    },
+    {
+      "id": "gk_minutes",
+      "prompt": "How many minutes are in a full day?",
+      "options": [
+        "1440",
+        "1200",
+        "960",
+        "1600"
+      ],
+      "answerIndex": 0,
+      "difficulty": "medium"
+    },
+    {
+      "id": "gk_monalisa",
+      "prompt": "Who painted the Mona Lisa?",
+      "options": [
+        "Michelangelo",
+        "Raphael",
+        "Leonardo da Vinci",
+        "Donatello"
+      ],
+      "answerIndex": 2,
+      "difficulty": "easy"
+    },
+    {
+      "id": "gk_prime",
+      "prompt": "What is the smallest prime number?",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "0"
+      ],
+      "answerIndex": 1,
+      "difficulty": "medium"
+    },
+    {
+      "id": "gk_ocean",
+      "prompt": "Which is the largest ocean on Earth?",
+      "options": [
+        "Atlantic",
+        "Pacific",
+        "Indian",
+        "Arctic"
+      ],
+      "answerIndex": 1,
+      "difficulty": "easy"
+    },
+    {
+      "id": "gk_photo",
+      "prompt": "Which gas do plants primarily absorb for photosynthesis?",
+      "options": [
+        "Oxygen",
+        "Nitrogen",
+        "Carbon dioxide",
+        "Hydrogen"
+      ],
+      "answerIndex": 2,
+      "difficulty": "easy"
+    },
+    {
+      "id": "gk_continents",
+      "prompt": "How many continents are there on Earth?",
+      "options": [
+        "Six",
+        "Seven",
+        "Five",
+        "Eight"
+      ],
+      "answerIndex": 1,
+      "difficulty": "easy"
+    },
+    {
+      "id": "gk_shakespeare",
+      "prompt": "Which playwright wrote 'Romeo and Juliet'?",
+      "options": [
+        "Charles Dickens",
+        "William Shakespeare",
+        "Jane Austen",
+        "Oscar Wilde"
+      ],
+      "answerIndex": 1,
+      "difficulty": "easy"
+    },
+    {
+      "id": "gk_speedlight",
+      "prompt": "Roughly how fast does light travel in a vacuum?",
+      "options": [
+        "300,000 km/s",
+        "30,000 km/s",
+        "3,000 km/s",
+        "3 million km/s"
+      ],
+      "answerIndex": 0,
+      "difficulty": "medium"
+    },
+    {
+      "id": "gk_everest",
+      "prompt": "What is the tallest mountain above sea level on Earth?",
+      "options": [
+        "K2",
+        "Mount Everest",
+        "Denali",
+        "Kilimanjaro"
+      ],
+      "answerIndex": 1,
+      "difficulty": "easy"
+    }
+  ]
+}

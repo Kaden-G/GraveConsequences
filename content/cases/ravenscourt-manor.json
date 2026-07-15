@@ -1,0 +1,321 @@
+{
+  "schemaVersion": "1.0",
+  "meta": {
+    "id": "ravenscourt-manor",
+    "title": "Murder at Ravenscourt Manor",
+    "theme": "Victorian country-house whodunit, 1887",
+    "difficulty": "standard",
+    "tierMap": {
+      "public": [
+        "board",
+        "trivia[].prompt",
+        "trivia[].options",
+        "clue.content (only once earned)"
+      ],
+      "private": [
+        "clue.content for tier=private (only to the earner)"
+      ],
+      "secret": [
+        "solution",
+        "clues[].effect",
+        "trivia[].answerIndex",
+        "killingFloor.rng"
+      ]
+    },
+    "authorNote": "Trivia content is themed general knowledge, deliberately NOT story facts. The trivia is the lock; the clue it reveals is the treasure. Keeping the skill-check separate from the deduction content stops players from reverse-engineering the solution out of the questions, and keeps all solution-bearing data inside the secret tier."
+  },
+  "board": {
+    "victim": {
+      "name": "Lord Edmund Ravenscourt",
+      "flavor": "Master of the estate, found lifeless the morning after a dinner party."
+    },
+    "suspects": [
+      {
+        "id": "blackwood",
+        "name": "Colonel Sebastian Blackwood",
+        "flavor": "Retired army officer, drowning in gambling debts."
+      },
+      {
+        "id": "cordelia",
+        "name": "Lady Cordelia Ravenscourt",
+        "flavor": "The widow, and sole heir to the estate."
+      },
+      {
+        "id": "grimsby",
+        "name": "Dr. Aloysius Grimsby",
+        "flavor": "The family physician, intimate with every poison in the county."
+      },
+      {
+        "id": "marsh",
+        "name": "Miss Genevieve Marsh",
+        "flavor": "The governess, quiet and ever-watchful."
+      },
+      {
+        "id": "crane",
+        "name": "Mr. Nathaniel Crane",
+        "flavor": "Business partner, feuding over a disputed ledger."
+      },
+      {
+        "id": "thorne",
+        "name": "Silas Thorne",
+        "flavor": "The groundskeeper, lately dismissed and nursing a grudge."
+      }
+    ],
+    "weapons": [
+      {
+        "id": "letter_opener",
+        "name": "Silver letter opener",
+        "flavor": "Kept on a stand in the study."
+      },
+      {
+        "id": "arsenic",
+        "name": "Arsenic",
+        "flavor": "Odorless, tasteless, and everywhere in a Victorian house."
+      },
+      {
+        "id": "candlestick",
+        "name": "Brass candlestick",
+        "flavor": "Heavy enough to fell a man."
+      },
+      {
+        "id": "cravat",
+        "name": "Silk cravat",
+        "flavor": "Fine enough to strangle with."
+      }
+    ],
+    "rooms": [
+      {
+        "id": "study",
+        "name": "The study",
+        "flavor": "Lord Ravenscourt's private sanctum.",
+        "mapRegion": "nw"
+      },
+      {
+        "id": "conservatory",
+        "name": "The conservatory",
+        "flavor": "A glass hothouse of orchids and evening quiet.",
+        "mapRegion": "ne"
+      },
+      {
+        "id": "wine_cellar",
+        "name": "The wine cellar",
+        "flavor": "Cool, dark, and low beneath the house.",
+        "mapRegion": "sw"
+      },
+      {
+        "id": "library",
+        "name": "The library",
+        "flavor": "Floor-to-ceiling shelves and a cold hearth.",
+        "mapRegion": "se"
+      }
+    ]
+  },
+  "solution": {
+    "suspect": "marsh",
+    "weapon": "arsenic",
+    "room": "conservatory",
+    "motive": "Lord Ravenscourt had discovered Miss Marsh's secret engagement to his heir and meant to dismiss and expose her at breakfast. She slipped arsenic into his evening tonic in the conservatory, where he took his nightly air among her orchids."
+  },
+  "clues": [
+    {
+      "id": "clue_susp_blackwood",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "blackwood"
+      },
+      "content": "Colonel Blackwood sat at the card table in plain view of three guests from eight until ten. He could not have slipped away."
+    },
+    {
+      "id": "clue_susp_cordelia",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "cordelia"
+      },
+      "content": "The butler swears Lady Cordelia never left the drawing room; he refilled her sherry a dozen times."
+    },
+    {
+      "id": "clue_susp_crane",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "crane"
+      },
+      "content": "Mr. Crane's carriage threw an axle two miles from the manor. He arrived only after the alarm was raised."
+    },
+    {
+      "id": "clue_susp_thorne",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "thorne"
+      },
+      "content": "Silas Thorne was locked out all evening \u2014 the servants' door was bolted from within, as the footman attests."
+    },
+    {
+      "id": "clue_susp_grimsby",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "grimsby"
+      },
+      "content": "The killer left prints from a smooth, uncalloused hand. Dr. Grimsby's palms are scarred from decades of surgery."
+    },
+    {
+      "id": "clue_wpn_opener",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "letter_opener"
+      },
+      "content": "The silver letter opener never left its stand in the study; the dust beneath it lay undisturbed."
+    },
+    {
+      "id": "clue_wpn_candlestick",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "candlestick"
+      },
+      "content": "The brass candlestick was in the scullery being polished by the maid the entire evening."
+    },
+    {
+      "id": "clue_wpn_cravat",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "cravat"
+      },
+      "content": "Lord Ravenscourt's silk cravat hung pressed and unworn in his dressing room."
+    },
+    {
+      "id": "clue_room_study",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "study"
+      },
+      "content": "The study was locked from the outside, the only key on the butler's ring. No one entered after seven."
+    },
+    {
+      "id": "clue_room_cellar",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "wine_cellar"
+      },
+      "content": "A burst pipe had flooded the wine cellar ankle-deep; no one could have stood in it."
+    },
+    {
+      "id": "clue_room_library",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "library"
+      },
+      "content": "The library hearth was stone cold and the lamps unlit \u2014 the room sat empty all night."
+    },
+    {
+      "id": "clue_priv_poison",
+      "tier": "private",
+      "effect": {
+        "type": "confirm",
+        "category": "weapon",
+        "target": "arsenic"
+      },
+      "content": "The physician's private notes record the victim complaining of a bitter tonic and a burning throat \u2014 the hallmarks of poison."
+    },
+    {
+      "id": "clue_priv_conservatory",
+      "tier": "private",
+      "effect": {
+        "type": "confirm",
+        "category": "room",
+        "target": "conservatory"
+      },
+      "content": "Fresh potting soil and a crushed white orchid clung to the victim's cuff \u2014 he died among the hothouse blooms."
+    },
+    {
+      "id": "clue_priv_governess",
+      "tier": "private",
+      "effect": {
+        "type": "lead",
+        "category": "suspect",
+        "target": "marsh"
+      },
+      "content": "Only one member of the household tended the orchids after dark, alone, every evening."
+    }
+  ],
+  "clueDispensing": {
+    "public": {
+      "trigger": "correct_trivia_answer",
+      "order": "authored",
+      "queue": [
+        "clue_susp_blackwood",
+        "clue_wpn_opener",
+        "clue_room_study",
+        "clue_susp_cordelia",
+        "clue_wpn_candlestick",
+        "clue_room_cellar",
+        "clue_susp_crane",
+        "clue_wpn_cravat",
+        "clue_room_library",
+        "clue_susp_thorne",
+        "clue_susp_grimsby"
+      ],
+      "note": "Interleaved suspect/weapon/room so the board narrows evenly; no axis solves too early."
+    },
+    "private": {
+      "trigger": "killing_floor_survival",
+      "order": "authored",
+      "queue": [
+        "clue_priv_poison",
+        "clue_priv_conservatory",
+        "clue_priv_governess"
+      ],
+      "note": "Scarce edges tied to risk \u2014 you braved the Chalice, you found a private lead. Dispensed only when a Killing Floor round actually culled someone."
+    }
+  },
+  "killingFloor": {
+    "strikeEvent": {
+      "name": "The lights go out across Ravenscourt",
+      "flavor": "A scream, a snuffed candle \u2014 everyone is dragged to the Killing Floor at once."
+    },
+    "minigame": {
+      "id": "poisoned_chalice",
+      "name": "The Poisoned Chalice",
+      "flavor": "Choose a goblet and drink. Some are laced. Survivors return to the investigation; the rest join the dead.",
+      "rng": {
+        "note": "SECRET tier \u2014 which goblets are fatal is decided server-side per round; never sent to clients before the choice resolves."
+      }
+    },
+    "resurrection": {
+      "flavor": "A ghost who wins the Chalice outright is dragged back among the living."
+    }
+  },
+  "finale": {
+    "name": "The Drawing Room Accusation",
+    "flavor": "The household is gathered. Survivors and qualifying ghosts race to name the suspect, weapon, and room while the unmasked Killer stalks closer with every wrong answer.",
+    "winCondition": "First correct Who + What + Where accusation wins. A wrong accusation lets the Killer take the accuser.",
+    "ghostEligibility": "A ghost may make the final accusation if they have earned at least one private lead."
+  },
+  "validation": {
+    "invariants": [
+      "Exactly one suspect, one weapon, and one room in `solution`.",
+      "Every non-solution board card is targeted by at least one public `eliminate` clue.",
+      "No clue eliminates or contradicts a `solution` card.",
+      "Every `trivia[].unlocks` references an existing clue id.",
+      "`private` clues (confirm/lead) never touch the shared board; they resolve only to the earner.",
+      "The full `clues[]` array and `solution` load into the secret tier; individual clue `content` is promoted to public/private only when its trivia is answered correctly."
+    ],
+    "solvabilityCheck": {
+      "publicEliminationsNarrowTo": {
+        "suspect": "marsh",
+        "weapon": "arsenic",
+        "room": "conservatory"
+      },
+      "note": "Eliminating the 5 non-solution suspects, 3 non-solution weapons, and 3 non-solution rooms leaves exactly the solution. 11 public eliminations total; the 3 private clues are edges, not required to solve."
+    }
+  }
+}
