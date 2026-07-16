@@ -375,15 +375,26 @@ export const resolveRound = onCall(async (request) => {
       },
     });
     nextPhase = Phase.KILLING_FLOOR;
-  } else {
-    // Nobody culled: show the reveal beat, then the host advances.
-    batch.update(roomRef(roomId), { phase: Phase.INTERSTITIAL });
-    nextPhase = Phase.INTERSTITIAL;
   }
   Object.entries(rosterUpdates).forEach(([k, v]) => batch.update(roomRef(roomId), { [k]: v }));
 
+  if (nextPhase === Phase.KILLING_FLOOR) {
+    await batch.commit();
+    return { phase: nextPhase, solvable, wrong: wrongAlive.length };
+  }
+
+  // Nobody culled. The clue is already on the corkboard, so a "case tightens" screen
+  // would only restate it — pause ONLY for something genuinely new: the finale opening
+  // or a Quickening. Otherwise flow straight to the next question.
+  if (solvable || quickenings.length > 0) {
+    batch.update(roomRef(roomId), { phase: Phase.INTERSTITIAL });
+    await batch.commit();
+    return { phase: Phase.INTERSTITIAL, solvable, wrong: 0 };
+  }
+
   await batch.commit();
-  return { phase: nextPhase, solvable, wrong: wrongAlive.length };
+  await loadNextQuestion(roomId, room.round + 1);
+  return { phase: Phase.TRIVIA, solvable, wrong: 0 };
 });
 
 function rollFatalGoblets() {

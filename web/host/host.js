@@ -196,17 +196,21 @@ const phases = {
       el("p", { className: "muted" }, `${done} of ${(kf.atRisk || []).length} have drunk…`)));
   },
 
+  // Only reached for something the board can't say on its own: a Quickening, the
+  // finale opening, or the aftermath of a cull. Normal clue rounds flow straight on.
   interstitial(room) {
-    const recent = (room.reveals || []).slice(-3).reverse();
     const quickened = room.quickenings || [];
-    stage.replaceChildren(el("div", { className: "stack" },
-      el("p", { className: "typed muted", style: "margin:0" }, "New evidence pinned to the board"),
-      el("h1", { className: "gaslit" }, room.solvable ? "The web narrows to one" : "The case tightens"),
-      ...quickened.map((name) =>
-        el("p", { className: "quicken", style: "max-width:52ch" }, `✨ ${name} draws breath — dragged back through the Veil!`)),
-      ...recent.map((r) => el("p", { className: "card", style: "max-width:52ch;font-family:var(--type);font-size:0.95rem" }, r.content)),
-      hostBtn(room, room.solvable ? "Call the Household Together" : "Continue the Investigation",
-        () => api.nextRound({ roomId }), "brass")));
+    const kids = quickened.map((name) =>
+      el("p", { className: "quicken", style: "max-width:52ch" }, `✨ ${name} draws breath — dragged back through the Veil!`));
+    if (room.solvable) {
+      kids.push(el("p", { className: "typed muted", style: "margin:0" }, "Every card but one is struck from the board"));
+      kids.push(el("h1", { className: "gaslit" }, "The web narrows to one"));
+      kids.push(hostBtn(room, "Call the Household Together", () => api.nextRound({ roomId }), "brass"));
+    } else {
+      if (!quickened.length) kids.push(el("p", { className: "typed muted", style: "margin:0" }, "The survivors return to the investigation"));
+      kids.push(hostBtn(room, "Continue the Investigation", () => api.nextRound({ roomId }), "brass"));
+    }
+    stage.replaceChildren(el("div", { className: "stack" }, ...kids));
   },
 
   finale(room) {

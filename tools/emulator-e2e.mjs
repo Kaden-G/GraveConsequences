@@ -193,12 +193,10 @@ async function main() {
   cd = await carolDoc();
   ok(isGhost(cd) && streakOf(cd) === 0, "a wrong answer resets the streak but never un-lives you (still a Ghost)");
 
-  // Now three correct in a row → Quicken back to life.
-  await callFn("nextRound", carol.token, { roomId: gRoom });
+  // Now three correct in a row → Quicken back to life. Normal rounds auto-advance
+  // (no interstitial), so answerGhost walks itself to the next question each time.
   await answerGhost(true);
-  await callFn("nextRound", carol.token, { roomId: gRoom });
   await answerGhost(true);
-  await callFn("nextRound", carol.token, { roomId: gRoom });
   await answerGhost(true); // third — the Quickening
   cd = await carolDoc();
   ok(cd.alive.booleanValue === true && isGhost(cd) === false, "three correct in a row Quickens the Ghost back to Living");
