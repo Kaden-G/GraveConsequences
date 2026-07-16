@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Cloud Functions — the authoritative server tier for Grave Consequences.",
   "main": "index.mjs",
-  "engines": { "node": "20" },
+  "engines": { "node": "22" },
   "scripts": {
     "sync:engine": "node sync-engine.mjs",
     "serve": "npm run sync:engine && firebase emulators:start --only functions,firestore,auth",
