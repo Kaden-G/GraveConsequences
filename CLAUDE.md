@@ -21,9 +21,21 @@ Party fused with Clue.
   dispensing) and `src/engine/phases.mjs` (room phase machine). Framework-agnostic,
   no Firestore yet. `npm run demo` shows the tier split working.
 
-**Not built (your job):** Firestore data model + security rules, Cloud Functions,
-the host (corkboard) view, the player view, the Killing-Floor minigame, and the
-finale. See "Build tasks" below.
+**Now built (v1 vertical slice — verified end-to-end on the emulator):**
+- Unit tests for the pure core — `test/engine.test.mjs` (`npm test`).
+- Firestore security rules encoding the three tiers — `firestore.rules`.
+- Cloud Functions (the secret tier) — `functions/index.mjs`: `createRoom`, `joinRoom`,
+  `startGame`, `submitAnswer`, `resolveRound`, `drinkChalice`, `nextRound`,
+  `makeAccusation`. Engine + content are synced into `functions/` by `sync-engine.mjs`.
+- Host corkboard view — `web/host/` (manor map, pinned notes, red string, cleared stamps).
+- Player view — `web/player/` (answer input, private leads, bounded accusation builder).
+- Killing Floor (Poisoned Chalice), Killer-Strike event, and the Accusation finale.
+- Emulator E2E — `tools/emulator-e2e.mjs` (`npm run e2e`): plays a full loop AND asserts
+  a client is DENIED reads of the secret tier + other players' private docs (guardrail #1).
+
+**Deferred to v2+ (per spec §7):** AI pack generator, more minigames/cases, traitor
+mode, cosmetics, and a real Blaze deploy (config lives in `web/shared/config.js` +
+`.firebaserc`; the code is deploy-ready via `firebase deploy`).
 
 ## Run
 ```bash

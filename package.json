@@ -6,7 +6,10 @@
   "description": "A party murder-mystery deduction game — Trivia Murder Party meets Clue.",
   "scripts": {
     "validate": "node tools/validate.mjs",
-    "demo": "node tools/demo.mjs"
+    "demo": "node tools/demo.mjs",
+    "test": "node --test",
+    "emulator": "npm --prefix functions run sync:engine && firebase emulators:start --only functions,firestore,auth,hosting",
+    "e2e": "node tools/emulator-e2e.mjs"
   },
   "engines": { "node": ">=20" }
 }

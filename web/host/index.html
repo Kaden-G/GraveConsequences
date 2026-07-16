@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grave Consequences — The Parlour</title>
+  <link rel="stylesheet" href="../styles/victorian.css" />
+  <link rel="stylesheet" href="host.css" />
+</head>
+<body class="vignette">
+  <!-- Phase theater: the changing act, always at the top of the screen. -->
+  <header id="stage" class="stage"></header>
+
+  <!-- The detective's corkboard: the persistent centerpiece. -->
+  <section id="board" class="corkboard hidden">
+    <svg id="strings" class="strings"></svg>
+    <div class="board-grid">
+      <div id="suspects" class="rail suspects"></div>
+      <div class="middle">
+        <div id="manor" class="manor"></div>
+        <div id="notes" class="notes"></div>
+      </div>
+      <div id="weapons" class="rail weapons"></div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast hidden"></div>
+  <script type="module" src="host.js"></script>
+</body>
+</html>

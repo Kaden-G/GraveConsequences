@@ -1,0 +1,141 @@
+/* Grave Consequences — Victorian gaslit whodunit theme (DESIGN_SPEC §8).
+   Ravenscourt Manor, 1887: oxblood & brass, deep greens, aged parchment,
+   a serif display face, hansom-cab-and-fog atmosphere. */
+
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Special+Elite&display=swap");
+
+:root {
+  --oxblood: #4a0e0e;
+  --oxblood-bright: #7d1414;
+  --brass: #c9a227;
+  --brass-bright: #e8c860;
+  --green-deep: #16301f;
+  --green: #244a33;
+  --parchment: #e7d9b8;
+  --parchment-dark: #cdb98a;
+  --ink: #2a2015;
+  --fog: #b8b0a0;
+  --shadow: rgba(0, 0, 0, 0.55);
+  --string: #a01818;
+  --display: "Cinzel", Georgia, serif;
+  --body: "EB Garamond", Georgia, serif;
+  --type: "Special Elite", "Courier New", monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--body);
+  color: var(--parchment);
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(201, 162, 39, 0.14), transparent 55%),
+    radial-gradient(ellipse at 50% 120%, rgba(0, 0, 0, 0.6), transparent 60%),
+    linear-gradient(160deg, #120a0a 0%, #1a0f0f 45%, #0d0808 100%);
+  background-attachment: fixed;
+}
+
+h1, h2, h3 { font-family: var(--display); letter-spacing: 0.04em; margin: 0 0 0.3em; }
+
+.gaslit { color: var(--brass); text-shadow: 0 0 14px rgba(232, 200, 96, 0.35); }
+.muted { color: var(--fog); }
+.serif-body { font-family: var(--body); }
+.typed { font-family: var(--type); }
+
+/* --- buttons ------------------------------------------------------------- */
+button {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--parchment);
+  background: linear-gradient(180deg, var(--oxblood-bright), var(--oxblood));
+  border: 1px solid var(--brass);
+  border-radius: 3px;
+  padding: 0.7em 1.3em;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #2a0808, 0 6px 14px var(--shadow);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
+}
+button:hover:not(:disabled) { filter: brightness(1.12); }
+button:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #2a0808, 0 3px 8px var(--shadow); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.brass { background: linear-gradient(180deg, var(--brass-bright), var(--brass)); color: var(--ink); border-color: #8a6d12; box-shadow: 0 3px 0 #8a6d12, 0 6px 14px var(--shadow); }
+
+input {
+  font-family: var(--type);
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 0.6em;
+  background: var(--parchment);
+  color: var(--ink);
+  border: 1px solid var(--brass);
+  border-radius: 3px;
+  letter-spacing: 0.25em;
+}
+
+/* --- parchment card ------------------------------------------------------ */
+.card {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.05), transparent),
+    linear-gradient(180deg, var(--parchment), var(--parchment-dark));
+  color: var(--ink);
+  border-radius: 4px;
+  padding: 1.2rem 1.4rem;
+  box-shadow: 0 8px 24px var(--shadow), inset 0 0 40px rgba(120, 90, 40, 0.18);
+  border: 1px solid rgba(74, 14, 14, 0.35);
+}
+
+.panel {
+  background: linear-gradient(180deg, rgba(36, 74, 51, 0.35), rgba(22, 48, 31, 0.5));
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  border-radius: 6px;
+  padding: 1rem 1.2rem;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.4);
+}
+
+/* --- vignette / fog overlay for the host ---------------------------------- */
+.vignette::after {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none;
+  box-shadow: inset 0 0 220px 60px rgba(0,0,0,0.75);
+  background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(0,0,0,0.35));
+}
+
+/* --- "cleared" evidence stamp -------------------------------------------- */
+.stamp {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  pointer-events: none;
+}
+.stamp span {
+  font-family: var(--display); font-weight: 900;
+  color: rgba(160, 24, 24, 0.85);
+  border: 4px double rgba(160, 24, 24, 0.85);
+  padding: 0.1em 0.4em; border-radius: 4px;
+  transform: rotate(-14deg);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  box-shadow: 0 0 0 2px rgba(160,24,24,0.2);
+  font-size: 0.8rem;
+}
+@keyframes stamp-in {
+  0% { transform: rotate(-14deg) scale(2.6); opacity: 0; }
+  60% { transform: rotate(-14deg) scale(0.9); opacity: 1; }
+  100% { transform: rotate(-14deg) scale(1); opacity: 1; }
+}
+.stamp.fresh span { animation: stamp-in 0.5s ease-out; }
+
+.cleared { filter: grayscale(0.85) brightness(0.6); }
+
+/* --- utility ------------------------------------------------------------- */
+.center { display: grid; place-items: center; min-height: 100vh; text-align: center; padding: 1.2rem; }
+.stack { display: flex; flex-direction: column; gap: 1rem; align-items: center; }
+.row { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
+.hidden { display: none !important; }
+.toast {
+  position: fixed; left: 50%; bottom: 5vh; transform: translateX(-50%);
+  background: var(--ink); color: var(--parchment); padding: 0.7em 1.2em;
+  border: 1px solid var(--brass); border-radius: 4px; z-index: 50; max-width: 90vw;
+}
+a { color: var(--brass-bright); }

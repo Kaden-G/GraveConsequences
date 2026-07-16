@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Grave Consequences — Firestore security rules.
+// These encode the three-tier visibility model (DESIGN_SPEC §4) as three postures.
+//
+//   PUBLIC   rooms/{roomId}                     — any authed player in the lobby may READ.
+//   PRIVATE  rooms/{roomId}/players/{uid}       — only that uid may READ their own doc.
+//   SECRET   rooms/{roomId}/secret/{doc}        — NO client read, ever. Functions only.
+//
+// ALL writes are denied to clients. Every mutation flows through Cloud Functions,
+// which use the Admin SDK and bypass these rules. This is guardrail #1: the sealed
+// solution, full clue graph, and answer keys physically cannot be read from a client.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /rooms/{roomId} {
+      // Public room doc: readable by any signed-in player. Never client-writable.
+      allow read: if request.auth != null;
+      allow write: if false;
+
+      // Private per-player docs: a player may read ONLY their own.
+      match /players/{uid} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow write: if false;
+      }
+
+      // Secret tier: the solution, clue effects, answer keys, and death-roll RNG.
+      // Unreadable and unwritable from any client. Cloud Functions (admin) only.
+      match /secret/{doc} {
+        allow read, write: if false;
+      }
+    }
+
+    // Deny everything not explicitly matched above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

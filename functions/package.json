@@ -1,0 +1,18 @@
+{
+  "name": "grave-consequences-functions",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Cloud Functions — the authoritative server tier for Grave Consequences.",
+  "main": "index.mjs",
+  "engines": { "node": "20" },
+  "scripts": {
+    "sync:engine": "node sync-engine.mjs",
+    "serve": "npm run sync:engine && firebase emulators:start --only functions,firestore,auth",
+    "lint": "true"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^5.1.1"
+  }
+}
