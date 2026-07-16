@@ -39,6 +39,11 @@ async function boot() {
 function render(room) {
   buildBoardOnce(room);
   updateBoard(room);
+  // The corkboard is empty until the investigation begins — keep the lobby focused
+  // on the join address + room code (Jackbox-style), then reveal the board.
+  const inLobby = room.phase === "lobby";
+  board.classList.toggle("hidden", inLobby);
+  stage.classList.toggle("lobby", inLobby);
   const fn = phases[room.phase] || phases.lobby;
   fn(room);
 }
@@ -49,7 +54,7 @@ function monogram(name) { return name.replace(/^(Lord|Lady|Dr\.|Mr\.|Miss|Colone
 
 function buildBoardOnce(room) {
   if (boardBuilt) return;
-  board.classList.remove("hidden");
+  // Build the cards once; render() controls when the board becomes visible.
 
   for (const s of room.board.suspects) {
     suspectsRail.append(el("div", { className: "pin suspect", dataset: { id: s.id }, style: `--tilt:${tilt()}` },
@@ -149,10 +154,14 @@ const isHost = (room) => room.hostUid === uid;
 
 const phases = {
   lobby(room) {
-    stage.replaceChildren(el("div", { className: "stack" },
-      el("p", { className: "typed muted", style: "margin:0" }, "Room code"),
+    const joinUrl = location.host + "/player";
+    stage.replaceChildren(el("div", { className: "stack lobby-stack" },
+      el("h1", { className: "gaslit", style: "font-size:clamp(1.8rem,4vw,3rem);margin-bottom:0.2em" }, "Grave Consequences"),
+      el("p", { className: "typed muted", style: "margin:0" }, "On your phone, go to"),
+      el("div", { className: "joinurl" }, joinUrl),
+      el("p", { className: "typed muted", style: "margin:1.4rem 0 0" }, "and enter room code"),
       el("div", { className: "roomcode" }, room.code),
-      rosterEl(room),
+      el("div", { style: "margin-top:0.6rem" }, rosterEl(room)),
       hostBtn(room, "Begin the Investigation", () => api.startGame({ roomId }), "brass",
         Object.keys(room.roster || {}).length < 1)));
   },
