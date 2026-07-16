@@ -100,6 +100,7 @@ async function main() {
   // --- start + play until solvable (answer correctly every round) ---
   await callFn("startGame", host.token, { roomId });
   let rounds = 0;
+  let correctRounds = 0;
   while (rounds < 30) {
     room = await readRoom(roomId, alice.token);
     if (room.phase === "finale") break;
@@ -110,11 +111,18 @@ async function main() {
       await callFn("submitAnswer", bob.token, { roomId, questionId: qid, choiceIndex: correct });
       const res = await callFn("resolveRound", host.token, { roomId });
       ok(res.wrong === 0, `round ${room.round}: both correct, nobody culled`);
+      correctRounds++;
     } else if (room.phase === "interstitial") {
       await callFn("nextRound", host.token, { roomId });
     }
     rounds++;
   }
+
+  // --- Vitality rises with correct answers and is mirrored to the public roster ---
+  room = await readRoom(roomId, alice.token);
+  ok(room.roster[alice.uid].vitality === correctRounds, `Vitality accrued to ${correctRounds} (one per correct round) and shows on the public roster`);
+  const alicePriv = (await clientRead(`rooms/${roomId}/players/${alice.uid}`, alice.token)).body;
+  ok(Number(alicePriv.fields.vitality.integerValue) === correctRounds, "private Vitality matches the public roster");
 
   room = await readRoom(roomId, alice.token);
   ok(room.phase === "finale", "the case became solvable and the finale opened");
@@ -134,7 +142,71 @@ async function main() {
   ok(room.phase === "game_over" && room.finale.winner.name === "Alice", "game ends with Alice as the winner");
   ok(room.finale.solution?.suspect === "marsh", "the solution is revealed only now, at game over");
 
-  console.log(`\nPASS — ${passed} assertions green. Full loop + tier isolation verified.\n`);
+  // ==========================================================================
+  // Scenario 2 — the Quickening: a Ghost claws back with 3 correct in a row.
+  // ==========================================================================
+  const carol = await anonToken();
+  const g = await callFn("createRoom", carol.token, { strikeEvery: 0 });
+  const gRoom = g.roomId;
+  // carol hosts AND plays here for simplicity — join as a player too.
+  await callFn("joinRoom", carol.token, { code: g.code, name: "Carol", avatar: "🥀" });
+  // carol created the room, so carol is the host; drive host actions with carol's token.
+  await callFn("startGame", carol.token, { roomId: gRoom });
+
+  const wrongIdx = (q) => (answerKey[q.id] + 1) % q.options.length;
+  const carolDoc = async () => JSON.parse(JSON.stringify((await clientRead(`rooms/${gRoom}/players/${carol.uid}`, carol.token)).body.fields));
+  const isGhost = (d) => d.isGhost.booleanValue === true;
+  const streakOf = (d) => Number(d.streak.integerValue);
+
+  // Die: keep answering wrong (→ Killing Floor) and drinking until a laced goblet lands.
+  let died = false;
+  for (let i = 0; i < 40 && !died; i++) {
+    let r = await readRoom(gRoom, carol.token);
+    if (r.phase === "trivia") {
+      await callFn("submitAnswer", carol.token, { roomId: gRoom, questionId: r.question.id, choiceIndex: wrongIdx(r.question) });
+      await callFn("resolveRound", carol.token, { roomId: gRoom });
+    } else if (r.phase === "killing_floor") {
+      const res = await callFn("drinkChalice", carol.token, { roomId: gRoom, gobletIndex: 0 });
+      died = res.fatal;
+      r = await readRoom(gRoom, carol.token);
+      if (r.phase === "interstitial") await callFn("nextRound", carol.token, { roomId: gRoom });
+    } else if (r.phase === "interstitial") {
+      await callFn("nextRound", carol.token, { roomId: gRoom });
+    }
+  }
+  ok(died, "a laced goblet turned Carol into a Ghost");
+  let cd = await carolDoc();
+  ok(isGhost(cd) && streakOf(cd) === 0, "death sets Ghost state and resets the revival streak to 0");
+
+  // Reset check: one correct (streak 1), then a wrong answer drops it back to 0 (no penalty, still a Ghost).
+  const answerGhost = async (correct) => {
+    const r = await readRoom(gRoom, carol.token);
+    if (r.phase !== "trivia") { await callFn("nextRound", carol.token, { roomId: gRoom }); return answerGhost(correct); }
+    const idx = correct ? answerKey[r.question.id] : wrongIdx(r.question);
+    await callFn("submitAnswer", carol.token, { roomId: gRoom, questionId: r.question.id, choiceIndex: idx });
+    await callFn("resolveRound", carol.token, { roomId: gRoom });
+  };
+  await answerGhost(true);
+  cd = await carolDoc();
+  ok(isGhost(cd) && streakOf(cd) === 1, "a Ghost's correct answer builds the revival streak (1)");
+  await answerGhost(false);
+  cd = await carolDoc();
+  ok(isGhost(cd) && streakOf(cd) === 0, "a wrong answer resets the streak but never un-lives you (still a Ghost)");
+
+  // Now three correct in a row → Quicken back to life.
+  await callFn("nextRound", carol.token, { roomId: gRoom });
+  await answerGhost(true);
+  await callFn("nextRound", carol.token, { roomId: gRoom });
+  await answerGhost(true);
+  await callFn("nextRound", carol.token, { roomId: gRoom });
+  await answerGhost(true); // third — the Quickening
+  cd = await carolDoc();
+  ok(cd.alive.booleanValue === true && isGhost(cd) === false, "three correct in a row Quickens the Ghost back to Living");
+  ok(cd.justQuickened.booleanValue === true, "the Quickening is flagged for a celebratory beat");
+  const gr = await readRoom(gRoom, carol.token);
+  ok(gr.roster[carol.uid].alive === true, "the public roster shows Carol among the living again");
+
+  console.log(`\nPASS — ${passed} assertions green. Full loop, tier isolation, and the Quickening verified.\n`);
 }
 
 main().catch((e) => { console.error("\n" + e.message + "\n"); process.exit(1); });

@@ -128,9 +128,20 @@ function rosterEl(room) {
   for (const p of entries) {
     wrap.append(el("div", { className: "chip" + (p.isGhost ? " ghost" : "") },
       el("span", { className: "av" }, p.avatar || "🔍"),
-      el("span", { className: "nm" }, p.name)));
+      el("span", { className: "nm" }, p.name),
+      vitalityEl(p.vitality || 0, p.isGhost)));
   }
   return wrap;
+}
+
+// A warm Vitality glow: filled embers up to 5, brighter as it climbs. Ghosts read dim.
+function vitalityEl(vitality, isGhost) {
+  const pips = el("div", { className: "vit" + (isGhost ? " dim" : "") });
+  const shown = Math.min(vitality, 5);
+  for (let i = 0; i < 5; i++) pips.append(el("span", { className: "pip" + (i < shown ? " lit" : "") }));
+  if (vitality > 5) pips.append(el("span", { className: "plus" }, "+" + (vitality - 5)));
+  pips.title = `Vitality ${vitality}`;
+  return pips;
 }
 
 // ---- phase theaters -------------------------------------------------------
@@ -178,9 +189,12 @@ const phases = {
 
   interstitial(room) {
     const recent = (room.reveals || []).slice(-3).reverse();
+    const quickened = room.quickenings || [];
     stage.replaceChildren(el("div", { className: "stack" },
       el("p", { className: "typed muted", style: "margin:0" }, "New evidence pinned to the board"),
       el("h1", { className: "gaslit" }, room.solvable ? "The web narrows to one" : "The case tightens"),
+      ...quickened.map((name) =>
+        el("p", { className: "quicken", style: "max-width:52ch" }, `✨ ${name} draws breath — dragged back through the Veil!`)),
       ...recent.map((r) => el("p", { className: "card", style: "max-width:52ch;font-family:var(--type);font-size:0.95rem" }, r.content)),
       hostBtn(room, room.solvable ? "Call the Household Together" : "Continue the Investigation",
         () => api.nextRound({ roomId }), "brass")));
@@ -210,9 +224,20 @@ const phases = {
       el("h1", { className: "gaslit" }, won ? `${f.winner.name} cracks the case!` : "The Killer escapes into the fog"),
       el("p", { className: "card", style: "max-width:52ch;font-size:1.1rem" },
         `It was ${name(room.board.suspects, sol.suspect)}, with the ${name(room.board.weapons, sol.weapon)}, in ${name(room.board.rooms, sol.room)}.`),
-      sol.motive ? el("p", { className: "serif-body", style: "max-width:52ch;font-style:italic" }, sol.motive) : ""));
+      sol.motive ? el("p", { className: "serif-body", style: "max-width:52ch;font-style:italic" }, sol.motive) : "",
+      brightestSoulEl(room)));
   },
 };
+
+// "Brightest soul" — highest Vitality across the roster, a positive flourish at the reveal.
+function brightestSoulEl(room) {
+  const entries = Object.values(room.roster || {});
+  if (!entries.length) return "";
+  const top = entries.reduce((a, b) => ((b.vitality || 0) > (a.vitality || 0) ? b : a));
+  if ((top.vitality || 0) <= 0) return "";
+  return el("p", { className: "typed", style: "color:var(--brass-bright)" },
+    `✨ Brightest soul: ${top.avatar || ""} ${top.name} (Vitality ${top.vitality})`);
+}
 
 function hostBtn(room, label, fn, cls = "", disabled = false) {
   if (!isHost(room)) return el("p", { className: "muted typed" }, "Waiting on the host…");

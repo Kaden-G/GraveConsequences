@@ -39,6 +39,7 @@ const FATAL_GOBLETS = 2; // how many are laced
 const STRIKE_EVERY = 4; // "The Killer Strikes" drags everyone to the floor every N rounds
 const ANSWER_SECONDS = 20;
 const MAX_KILLER_PROXIMITY = 3; // wrong finale accusations before the Killer wins
+const REVIVE_STREAK = 3; // correct-in-a-row a Ghost needs to Quicken back to life
 
 // --- content access (bundled copy, server-only) ----------------------------
 const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -128,6 +129,7 @@ export const createRoom = onCall(async (request) => {
     roster: {},
     question: null,
     reveals: [],
+    quickenings: [],
     killingFloor: null,
     finale: null,
     solvable: false,
@@ -174,7 +176,7 @@ export const joinRoom = onCall(async (request) => {
   const roomId = roomSnap.id;
   if (room.phase !== Phase.LOBBY) throw new HttpsError("failed-precondition", "That game has already begun.");
 
-  const rosterEntry = { name, avatar, alive: true, isGhost: false };
+  const rosterEntry = { name, avatar, alive: true, isGhost: false, vitality: 0 };
   await roomRef(roomId).update({ [`roster.${uid}`]: rosterEntry });
   await playersCol(roomId).doc(uid).set({
     name,
@@ -182,10 +184,12 @@ export const joinRoom = onCall(async (request) => {
     alive: true,
     isGhost: false,
     lives: 1,
-    streak: 0,
+    streak: 0, // correct-in-a-row; as a Ghost this drives reanimation
+    vitality: 0, // pure upward standing — never goes negative
     leads: [],
     answer: null,
     canAccuse: false,
+    justQuickened: false,
   });
 
   return { roomId };
@@ -219,15 +223,16 @@ async function loadNextQuestion(roomId, round) {
     currentQuestionId: qid,
   });
 
-  // Clear every player's answer for the new round.
+  // Clear every player's answer + transient Quickening flag for the new round.
   const players = await playersCol(roomId).get();
   const batch = db.batch();
-  players.forEach((p) => batch.update(p.ref, { answer: null }));
+  players.forEach((p) => batch.update(p.ref, { answer: null, justQuickened: false }));
   batch.update(roomRef(roomId), {
     phase: Phase.TRIVIA,
     round,
     question: { ...question, deadline: Date.now() + ANSWER_SECONDS * 1000 },
     killingFloor: null,
+    quickenings: [],
   });
   await batch.commit();
 }
@@ -286,9 +291,11 @@ export const resolveRound = onCall(async (request) => {
   const publicState = publicStateFromRoom(room);
   const reveals = [...(room.reveals || [])];
   const rosterUpdates = {};
+  const quickenings = []; // names of Ghosts who reanimated this round (for the host beat)
   const batch = db.batch();
 
   const wrongAlive = [];
+  const quickenedUids = new Set(); // reanimated this round — spared this round's Strike so the beat lands
   for (const p of players.docs) {
     const pd = p.data();
     const choice = pd.answer?.questionId === secret.currentQuestionId ? pd.answer.choiceIndex : null;
@@ -308,8 +315,27 @@ export const resolveRound = onCall(async (request) => {
           by: pd.name,
         });
       }
-      batch.update(p.ref, { streak: (pd.streak || 0) + 1, answer: { ...pd.answer, correct: true } });
+      // Vitality rises on every correct answer (upward-only). Track the streak.
+      const streak = (pd.streak || 0) + 1;
+      const vitality = (pd.vitality || 0) + 1;
+      const upd = { vitality, answer: { ...pd.answer, correct: true } };
+      rosterUpdates[`roster.${p.id}.vitality`] = vitality;
+      if (pd.isGhost && streak >= REVIVE_STREAK) {
+        // The Quickening — three in a row drags a Ghost back through the Veil.
+        upd.alive = true;
+        upd.isGhost = false;
+        upd.streak = 0;
+        upd.justQuickened = true;
+        rosterUpdates[`roster.${p.id}.alive`] = true;
+        rosterUpdates[`roster.${p.id}.isGhost`] = false;
+        quickenings.push(pd.name);
+        quickenedUids.add(p.id);
+      } else {
+        upd.streak = streak;
+      }
+      batch.update(p.ref, upd);
     } else {
+      // A wrong answer never subtracts Vitality — it only stalls the streak.
       batch.update(p.ref, { streak: 0, answer: pd.answer ? { ...pd.answer, correct: false } : null });
       if (pd.alive) wrongAlive.push(p.id);
     }
@@ -320,16 +346,18 @@ export const resolveRound = onCall(async (request) => {
   const killerStrikes = strikeEvery > 0 && room.round > 0 && room.round % strikeEvery === 0;
 
   // Persist graded board + dispensing cursor.
-  batch.update(roomRef(roomId), { cleared: publicState.cleared, reveals, solvable });
+  batch.update(roomRef(roomId), { cleared: publicState.cleared, reveals, solvable, quickenings });
   batch.update(secretRef(roomId), { cursors: secret.cursors });
 
+  // Killer Strikes pulls EVERYONE (alive + ghosts, so ghosts can be revived) — except
+  // anyone who just Quickened this round, so their revival beat isn't stomped. An
+  // ordinary cull pulls only those who answered wrong.
+  const atRisk = killerStrikes
+    ? players.docs.map((p) => p.id).filter((id) => !quickenedUids.has(id))
+    : wrongAlive;
+
   let nextPhase;
-  if (killerStrikes || wrongAlive.length > 0) {
-    // Killer Strikes pulls EVERYONE (alive + ghosts, so ghosts can be revived);
-    // an ordinary cull pulls only those who answered wrong.
-    const atRisk = killerStrikes
-      ? players.docs.map((p) => p.id)
-      : wrongAlive;
+  if (atRisk.length > 0) {
     const fatalByUid = {};
     for (const id of atRisk) fatalByUid[id] = rollFatalGoblets();
     batch.update(secretRef(roomId), { killingFloorFatal: fatalByUid });
@@ -398,32 +426,38 @@ export const drinkChalice = onCall(async (request) => {
   const survivors = [...kf.survivors];
   const dead = [...kf.dead];
 
+  const vitality = fatal ? (pd.vitality || 0) : (pd.vitality || 0) + 1; // survival is a step toward life
   if (fatal) {
-    // The chalice was laced. A living sleuth joins the dead.
+    // The chalice was laced. A living sleuth joins the dead — no Vitality penalty,
+    // but the revival streak resets so the comeback starts fresh.
     dead.push(uid);
-    batch.update(pref, { alive: false, isGhost: true, lives: 0 });
+    batch.update(pref, { alive: false, isGhost: true, lives: 0, streak: 0 });
     batch.update(roomRef(roomId), { [`roster.${uid}.alive`]: false, [`roster.${uid}.isGhost`]: true });
   } else {
     survivors.push(uid);
     if (wasGhost) {
-      // Won the Chalice outright as a ghost → dragged back among the living.
-      batch.update(pref, { alive: true, isGhost: false, lives: 1 });
-      batch.update(roomRef(roomId), { [`roster.${uid}.alive`]: true, [`roster.${uid}.isGhost`]: false });
+      // Won the Chalice outright as a ghost → dragged back among the living (a Quickening).
+      batch.update(pref, { alive: true, isGhost: false, lives: 1, streak: 0, vitality, justQuickened: true });
+      batch.update(roomRef(roomId), {
+        [`roster.${uid}.alive`]: true, [`roster.${uid}.isGhost`]: false, [`roster.${uid}.vitality`]: vitality,
+        quickenings: FieldValue.arrayUnion(pd.name),
+      });
     } else {
-      // Survived a real cull → earn a scarce private lead.
+      // Survived a real cull → earn a scarce private lead and a step of Vitality.
       const lead = dispensePrivateClue(secret);
+      const upd = { vitality };
       if (lead) {
-        batch.update(pref, {
-          leads: FieldValue.arrayUnion({
-            clueId: lead.id,
-            content: lead.content,
-            category: lead.effect.category || null,
-            target: lead.effect.target || null,
-          }),
-          canAccuse: true,
+        upd.leads = FieldValue.arrayUnion({
+          clueId: lead.id,
+          content: lead.content,
+          category: lead.effect.category || null,
+          target: lead.effect.target || null,
         });
+        upd.canAccuse = true;
         batch.update(secretRef(roomId), { cursors: secret.cursors });
       }
+      batch.update(pref, upd);
+      batch.update(roomRef(roomId), { [`roster.${uid}.vitality`]: vitality });
     }
   }
 

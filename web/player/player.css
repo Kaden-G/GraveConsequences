@@ -18,3 +18,19 @@
 .acc-options button { font-family: var(--body); font-size: 0.95rem; padding: 0.6em; }
 .acc-options button.sel { background: linear-gradient(180deg, var(--brass-bright), var(--brass)); color: var(--ink); }
 .big { font-size: 1.2rem; }
+
+/* status banner (ghost / living / quickened) */
+.status { display:flex; flex-direction:column; align-items:center; gap:0.35rem; width:100%;
+  padding:0.8rem 1rem; border-radius:6px; text-align:center; border:1px solid var(--brass); }
+.status strong { font-family:var(--display); font-size:1.2rem; }
+.status span { font-size:0.9rem; }
+.status .vitline { font-family:var(--type); font-size:0.8rem; color:var(--brass-bright); }
+.status.living { flex-direction:row; justify-content:center; gap:0.8rem; padding:0.5rem 1rem;
+  background:linear-gradient(180deg, rgba(36,74,51,0.4), rgba(22,48,31,0.5)); }
+.status.ghost { background:linear-gradient(180deg, rgba(40,40,60,0.6), rgba(20,20,32,0.7)); }
+.status.quickened { background:linear-gradient(180deg,#fff7dc,#f2e2ad); color:var(--ink);
+  border-color:var(--brass-bright); box-shadow:0 0 26px rgba(232,200,96,0.6); }
+.status.quickened .vitline { color:var(--oxblood); }
+.revive-pips { display:flex; gap:8px; margin-top:0.2rem; }
+.revive-pips .rp { width:16px; height:16px; border-radius:50%; background:rgba(255,255,255,0.12); border:1px solid var(--brass); }
+.revive-pips .rp.lit { background:radial-gradient(circle at 35% 30%, #ffe9a8, var(--brass) 60%, #7d5a10); box-shadow:0 0 8px rgba(232,200,96,0.8); }

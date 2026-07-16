@@ -84,7 +84,8 @@ const views = {
     const answered = me.answer && me.answer.questionId === q?.id;
     const graded = answered && typeof me.answer.correct === "boolean";
     const header = el("div", { className: "stack" },
-      el("p", { className: "typed muted", style: "margin:0" }, `Round ${room.round}${me.isGhost ? " · 👻 ghost" : ""}`),
+      statusBanner(),
+      el("p", { className: "typed muted", style: "margin:0" }, `Round ${room.round}`),
       el("h1", { className: "gaslit", style: "font-size:1.3rem" }, q?.prompt || "…"));
     const opts = (q?.options || []).map((o, i) => {
       let cls = "answer-btn";
@@ -98,8 +99,11 @@ const views = {
       };
       return b;
     });
+    const gradedMsg = me.answer?.correct
+      ? (me.isGhost ? "Correct — the Veil thins. Keep the streak alive." : "Correct — you pinned a clue to the board.")
+      : (me.isGhost ? "Wrong — your revival streak resets. Try again." : "Wrong — the Killing Floor awaits.");
     app.replaceChildren(header, el("div", { className: "stack" }, ...opts),
-      graded ? el("p", { className: "panel" }, me.answer.correct ? "Correct — you pinned a clue to the board." : "Wrong — the Killing Floor awaits.")
+      graded ? el("p", { className: "panel" }, gradedMsg)
              : answered ? el("p", { className: "muted typed" }, "Locked. Await the reveal.") : "");
   },
 
@@ -108,7 +112,9 @@ const views = {
     const atRisk = (kf.atRisk || []).includes(uid);
     const resolved = kf.resolved && kf.resolved[uid];
     if (!atRisk) {
-      return app.replaceChildren(panel("🕯️", "You are spared", "You answered true. Watch the screen as the others drink."));
+      if (me.justQuickened) return app.replaceChildren(panel("✨", "You draw breath again!", "Three in a row — you clawed back through the Veil while the others face the chalice."));
+      return app.replaceChildren(panel(me.isGhost ? "👻" : "🕯️", me.isGhost ? "You watch from the Veil" : "You are spared",
+        me.isGhost ? "Ghosts don't drink — keep answering to Quicken back. Watch the others face the chalice." : "You answered true. Watch the screen as the others drink."));
     }
     if (resolved) {
       return app.replaceChildren(panel(resolved.fatal ? "⚰️" : "🍷",
@@ -134,6 +140,7 @@ const views = {
 
   interstitial() {
     app.replaceChildren(el("div", { className: "stack" },
+      statusBanner(),
       el("p", { className: "typed muted", style: "margin:0" }, "Your private leads"),
       el("h1", { className: "gaslit", style: "font-size:1.4rem" }, "Case notebook"),
       leadsEl(),
@@ -188,6 +195,30 @@ const views = {
       "Return to the parlour screen for the full reveal."));
   },
 };
+
+// Loud state feedback: fresh Quickening, ghost + revival progress, or living Vitality.
+function statusBanner() {
+  const vitality = me.vitality || 0;
+  if (me.justQuickened) {
+    return el("div", { className: "status quickened" },
+      el("div", { style: "font-size:2rem" }, "✨"),
+      el("strong", {}, "You draw breath again!"),
+      el("span", {}, "Three in a row — you clawed back through the Veil. You are among the living."));
+  }
+  if (me.isGhost) {
+    const streak = me.streak || 0;
+    const pips = el("div", { className: "revive-pips" });
+    for (let i = 0; i < 3; i++) pips.append(el("span", { className: "rp" + (i < streak ? " lit" : "") }));
+    return el("div", { className: "status ghost" },
+      el("div", { style: "font-size:1.8rem" }, "👻"),
+      el("strong", {}, "You are a ghost"),
+      el("span", {}, `Answer ${3 - streak} more in a row to Quicken back to life:`),
+      pips,
+      el("span", { className: "vitline" }, `Vitality ${vitality}`));
+  }
+  return el("div", { className: "status living" },
+    el("span", {}, "❤ Living"), el("span", { className: "vitline" }, `Vitality ${vitality}`));
+}
 
 function leadsEl() {
   const leads = me.leads || [];

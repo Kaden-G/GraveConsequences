@@ -105,8 +105,23 @@
 .chip { display:flex; gap:0.4rem; align-items:center; background:rgba(0,0,0,0.3); border:1px solid var(--brass);
   border-radius:20px; padding:0.35em 0.8em 0.35em 0.4em; font-family:var(--body); }
 .chip .av { font-size:1.3rem; }
-.chip.ghost { opacity:0.55; filter:grayscale(0.6); }
+.chip.ghost { opacity:0.7; filter:grayscale(0.5); }
 .chip.ghost .nm::after { content:" 👻"; }
+
+/* Vitality glow meter on each roster chip */
+.vit { display:inline-flex; gap:3px; align-items:center; margin-left:0.3em; }
+.vit .pip { width:8px; height:8px; border-radius:50%; background:rgba(0,0,0,0.35); border:1px solid rgba(201,162,39,0.4); }
+.vit .pip.lit { background:radial-gradient(circle at 35% 30%, #ffe9a8, var(--brass) 60%, #7d5a10); border-color:var(--brass-bright); box-shadow:0 0 6px rgba(232,200,96,0.7); }
+.vit.dim .pip.lit { box-shadow:none; opacity:0.6; }
+.vit .plus { font-family:var(--type); font-size:0.75rem; color:var(--brass-bright); margin-left:2px; }
+
+/* the Quickening beat */
+.quicken {
+  font-family:var(--display); font-weight:700; color:#123; font-size:1.15rem;
+  background:linear-gradient(180deg,#fff7dc,#f2e2ad); border:1px solid var(--brass);
+  border-radius:4px; padding:0.6rem 1rem; box-shadow:0 0 24px rgba(232,200,96,0.5);
+  animation: stamp-in 0.5s ease-out;
+}
 
 .goblets { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:0.6rem; }
 .goblet { font-size:3rem; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.6)); }
