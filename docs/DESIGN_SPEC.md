@@ -128,7 +128,7 @@ For AI generation later: because effects are ID-sets over a frozen board, an ove
 
 | Piece | Role | Notes |
 |---|---|---|
-| **GitHub Pages** | Host view + player view | Static front-end, own your hosting |
+| **Firebase Hosting** | Host view + player view | Static front-end (served next to Functions/Auth); live at grave-consequences.web.app |
 | **Firestore** | Realtime room state | Players, phase, question, revealed evidence, ghost status |
 | **Cloud Functions** | Authoritative logic | Question selection, answer grading, clue dispensing, death rolls, solution checking |
 | **Firestore Security Rules** | Hidden information | Solution + un-revealed evidence server-side only |

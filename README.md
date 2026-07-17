@@ -8,7 +8,7 @@ investigating as ghosts, and the game ends in a run-from-the-killer accusation.
 - **Build handoff for Claude Code:** [`CLAUDE.md`](CLAUDE.md)
 
 ## Stack
-GitHub Pages (host + player views) · Firestore (realtime room state) · Cloud
+Firebase Hosting (host + player views) · Firestore (realtime room state) · Cloud
 Functions (authoritative logic). Content — mysteries (`CasePack`) and questions
 (`TriviaPack`) — is owned static data; the live game calls no model APIs.
 

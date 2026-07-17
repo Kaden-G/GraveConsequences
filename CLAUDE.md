@@ -71,7 +71,7 @@ them to save effort.
 ## Architecture at a glance
 | Layer | Tech | Holds |
 |---|---|---|
-| Host view + player view | GitHub Pages (static) | Public + that player's private state |
+| Host view + player view | Firebase Hosting (static) | Public + that player's private state |
 | Realtime room state | Firestore | Public room doc + per-player private docs |
 | Authoritative logic | Cloud Functions | The secret tier; grading; dispensing; RNG |
 
