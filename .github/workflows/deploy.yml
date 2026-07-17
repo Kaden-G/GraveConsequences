@@ -1,0 +1,61 @@
+name: CI & Deploy
+
+# Push to main -> verify (validate + unit + emulator E2E) -> deploy to Firebase.
+# Docs-only pushes are skipped. Manual runs available via the Actions tab.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  workflow_dispatch:
+
+# Never let two deploys race.
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-java@v4 # the Firestore emulator needs a JVM
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install functions deps
+        run: npm ci --prefix functions
+      - name: Sync engine + content into functions
+        run: npm --prefix functions run sync:engine
+      - name: Validate content (closed-world contract)
+        run: npm run validate
+      - name: Unit tests
+        run: npm test
+      - name: Emulator E2E (full loop + tier isolation)
+        run: npx firebase-tools@latest emulators:exec --only functions,firestore,auth --project grave-consequences "node tools/emulator-e2e.mjs"
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install functions deps # firebase needs these to analyze gen2 functions
+        run: npm ci --prefix functions
+      - name: Deploy hosting + functions + firestore rules
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SA" ]; then
+            echo "::warning::FIREBASE_SERVICE_ACCOUNT secret not set yet — skipping deploy."
+            exit 0
+          fi
+          printf '%s' "$SA" > "${{ runner.temp }}/gcp-key.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="${{ runner.temp }}/gcp-key.json"
+          npx firebase-tools@latest deploy --only hosting,functions,firestore --project grave-consequences --non-interactive --force
