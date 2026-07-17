@@ -94,7 +94,7 @@ function publicStateFromRoom(room) {
 // ============================================================================
 export const createRoom = onCall(async (request) => {
   const hostUid = requireAuth(request);
-  const caseId = request.data?.caseId || "ravenscourt-manor";
+  const caseId = request.data?.caseId || "ravenwood-manor";
   const triviaPackIds = request.data?.triviaPackIds?.length
     ? request.data.triviaPackIds
     : ["general-knowledge-vol-1"];

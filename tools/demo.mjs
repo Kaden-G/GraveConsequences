@@ -7,7 +7,7 @@ import { loadContent, isCaseSolvable } from "../src/engine/contentLoader.mjs";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const load = (p) => JSON.parse(readFileSync(join(root, p), "utf8"));
 
-const cp = load("content/cases/ravenscourt-manor.json");
+const cp = load("content/cases/ravenwood-manor.json");
 const tp = load("content/trivia/general-knowledge-vol-1.json");
 const { publicState, secret } = loadContent(cp, [tp]);
 

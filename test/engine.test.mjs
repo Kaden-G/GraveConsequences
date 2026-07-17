@@ -19,7 +19,7 @@ import {
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const load = (p) => JSON.parse(readFileSync(join(root, p), "utf8"));
-const casePack = () => load("content/cases/ravenscourt-manor.json");
+const casePack = () => load("content/cases/ravenwood-manor.json");
 const triviaPack = () => load("content/trivia/general-knowledge-vol-1.json");
 
 // ---- phase machine ---------------------------------------------------------

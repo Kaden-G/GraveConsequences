@@ -56,7 +56,7 @@ function renderJoin(err) {
   };
 
   app.replaceChildren(el("div", { className: "stack" },
-    el("p", { className: "typed muted", style: "margin:0" }, "Ravenscourt Manor · 1887"),
+    el("p", { className: "typed muted", style: "margin:0" }, "Ravenwood Manor · 1872"),
     el("h1", { className: "gaslit" }, "Join the Investigation"),
     el("p", { className: "muted" }, "Pick your mark, then your name and the room code."),
     avatarRow, nameInput, codeInput, join,

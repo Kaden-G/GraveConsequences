@@ -1,9 +1,9 @@
 {
   "schemaVersion": "1.0",
   "meta": {
-    "id": "ravenscourt-manor",
-    "title": "Murder at Ravenscourt Manor",
-    "theme": "Victorian country-house whodunit, 1887",
+    "id": "ravenwood-manor",
+    "title": "Murder at Ravenwood Manor",
+    "theme": "Victorian country-house whodunit, 1872",
     "difficulty": "standard",
     "tierMap": {
       "public": [
@@ -26,7 +26,7 @@
   },
   "board": {
     "victim": {
-      "name": "Lord Edmund Ravenscourt",
+      "name": "Lord Edmund Ravenwood",
       "flavor": "Master of the estate, found lifeless the morning after a dinner party."
     },
     "suspects": [
@@ -37,7 +37,7 @@
       },
       {
         "id": "cordelia",
-        "name": "Lady Cordelia Ravenscourt",
+        "name": "Lady Cordelia Ravenwood",
         "flavor": "The widow, and sole heir to the estate."
       },
       {
@@ -87,7 +87,7 @@
       {
         "id": "study",
         "name": "The study",
-        "flavor": "Lord Ravenscourt's private sanctum.",
+        "flavor": "Lord Ravenwood's private sanctum.",
         "mapRegion": "nw"
       },
       {
@@ -97,9 +97,9 @@
         "mapRegion": "ne"
       },
       {
-        "id": "wine_cellar",
-        "name": "The wine cellar",
-        "flavor": "Cool, dark, and low beneath the house.",
+        "id": "ballroom",
+        "name": "The ballroom",
+        "flavor": "A vast parquet floor beneath a great chandelier.",
         "mapRegion": "sw"
       },
       {
@@ -114,7 +114,7 @@
     "suspect": "marsh",
     "weapon": "arsenic",
     "room": "conservatory",
-    "motive": "Lord Ravenscourt had discovered Miss Marsh's secret engagement to his heir and meant to dismiss and expose her at breakfast. She slipped arsenic into his evening tonic in the conservatory, where he took his nightly air among her orchids."
+    "motive": "Lord Ravenwood had discovered Miss Marsh's secret engagement to his heir and meant to dismiss and expose her at breakfast. She slipped arsenic into his evening tonic in the conservatory, where he took his nightly air among her orchids."
   },
   "clues": [
     {
@@ -187,7 +187,7 @@
         "type": "eliminate",
         "target": "cravat"
       },
-      "content": "Lord Ravenscourt's silk cravat hung pressed and unworn in his dressing room."
+      "content": "Lord Ravenwood's silk cravat hung pressed and unworn in his dressing room."
     },
     {
       "id": "clue_room_study",
@@ -199,13 +199,13 @@
       "content": "The study was locked from the outside, the only key on the butler's ring. No one entered after seven."
     },
     {
-      "id": "clue_room_cellar",
+      "id": "clue_room_ballroom",
       "tier": "public",
       "effect": {
         "type": "eliminate",
-        "target": "wine_cellar"
+        "target": "ballroom"
       },
-      "content": "A burst pipe had flooded the wine cellar ankle-deep; no one could have stood in it."
+      "content": "The ballroom was shuttered after the last waltz; the footman locked its doors at nine and kept the only key on his person all night."
     },
     {
       "id": "clue_room_library",
@@ -257,7 +257,7 @@
         "clue_room_study",
         "clue_susp_cordelia",
         "clue_wpn_candlestick",
-        "clue_room_cellar",
+        "clue_room_ballroom",
         "clue_susp_crane",
         "clue_wpn_cravat",
         "clue_room_library",
@@ -279,7 +279,7 @@
   },
   "killingFloor": {
     "strikeEvent": {
-      "name": "The lights go out across Ravenscourt",
+      "name": "The lights go out across Ravenwood",
       "flavor": "A scream, a snuffed candle \u2014 everyone is dragged to the Killing Floor at once."
     },
     "minigame": {

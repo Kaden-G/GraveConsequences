@@ -117,7 +117,7 @@ For AI generation later: because effects are ID-sets over a frozen board, an ove
 - Earned clues get promoted to public/private as unlocked.
 
 ### Content files
-- `case-ravenscourt-manor.json` — the first hand-authored mystery; doubles as the generator schema; ships with a `validation` block of solvability invariants (the future "validated detector").
+- `case-ravenwood-manor.json` — the first hand-authored mystery; doubles as the generator schema; ships with a `validation` block of solvability invariants (the future "validated detector").
 - `trivia-pack-general-knowledge.json` — a standalone example pack, fully decoupled.
 
 > **Landlord test — passed.** Generation is a build-time job; the live game calls zero model APIs. The model manufactures an asset you keep.
@@ -150,7 +150,7 @@ Depth-first: build *one* full loop end-to-end at high fidelity, then widen.
 
 ## 8. What "polished" means here (so it's a target, not a vibe)
 
-- **Identity: classic Clue / Sherlock Holmes — Victorian.** Gaslit country-manor whodunit: oxblood and brass, deep greens, aged parchment, a serif display face, hansom-cab-and-fog atmosphere. Ravenscourt Manor, 1887. Commit fully.
+- **Identity: classic Clue / Sherlock Holmes — Victorian.** Gaslit country-manor whodunit: oxblood and brass, deep greens, aged parchment, a serif display face, hansom-cab-and-fog atmosphere. Ravenwood Manor, 1872. Commit fully.
 - **The host screen is the detective's corkboard.** It retains a **Clue-style manor map** — a high-level floorplan of the house and grounds, rooms as regions — as the centerpiece. Suspect portrait cards line the top, weapon cards the bottom. **Notes push-pin onto the board**, joined to the map and suspects by **red string**, and cards get a **"cleared" stamp** as evidence eliminates them. It updates live as the room plays.
 - **Juice.** Evidence-reveal stamp, Killing-Floor tension audio, the accusation drumroll, a Killer-closing-in heartbeat.
 - **Frictionless lobby.** Room code, avatar pick, pack selection, zero-instruction join.
@@ -179,7 +179,7 @@ Depth-first: build *one* full loop end-to-end at high fidelity, then widen.
 
 1. ~~Lock the fork~~ → **PvE** ✓
 2. ~~Pick the aesthetic~~ → **Victorian Clue/Sherlock** ✓
-3. ~~CasePack schema + Case #1~~ → **`case-ravenscourt-manor.json`** ✓
+3. ~~CasePack schema + Case #1~~ → **`case-ravenwood-manor.json`** ✓
 4. ~~Decouple trivia into swappable packs~~ → **`trivia-pack-general-knowledge.json`** ✓
 5. **Stand up the vertical-slice skeleton** on your Hold'em plumbing: room/phase state machine first, then the content loader (CasePack + selected TriviaPack) with the tier split + validator, then one round, one minigame, finale.
 6. **Build the corkboard host view** — manor map + pinned notes + red string + cleared stamps.

@@ -31,7 +31,7 @@ async function boot() {
   uid = await ready;
   stage.innerHTML = `<div class="stack"><h1 class="gaslit">Opening the parlour…</h1></div>`;
   try {
-    const { data } = await api.createRoom({ caseId: "ravenscourt-manor", triviaPackIds: ["general-knowledge-vol-1"] });
+    const { data } = await api.createRoom({ caseId: "ravenwood-manor", triviaPackIds: ["general-knowledge-vol-1"] });
     roomId = data.roomId;
     watchRoom(roomId, render);
   } catch (e) {
@@ -98,7 +98,7 @@ function buildBoardOnce(room) {
       el("div", { className: "name" }, w.name),
       el("div", { className: "flavor" }, w.flavor || "")));
   }
-  manor.append(el("div", { className: "plate" }, "Ravenscourt Manor"));
+  manor.append(el("div", { className: "plate" }, "Ravenwood Manor"));
   for (const r of room.board.rooms) {
     manor.append(el("div", { className: "region", dataset: { id: r.id, region: r.mapRegion || "nw" } },
       el("div", { className: "rname" }, r.name),
@@ -242,7 +242,7 @@ const phases = {
       el("h1", { className: "gaslit" }, "The Poisoned Chalice"),
       el("p", { className: "serif-body", style: "max-width:44ch" },
         kf.reason === "strike"
-          ? "The lights go out across Ravenscourt — everyone is dragged to the table."
+          ? "The lights go out across Ravenwood — everyone is dragged to the table."
           : "Those who faltered must drink. Some goblets are laced."),
       el("div", { className: "goblets" }, ...Array.from({ length: kf.goblets || 5 }, () => el("span", { className: "goblet" }, "🍷"))),
       el("p", { className: "typed" }, `At the table: ${atRisk.join(", ")}`),

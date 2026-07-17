@@ -14,7 +14,7 @@ Party fused with Clue.
 ## Current state
 **Built (and verified):**
 - Design spec — `docs/DESIGN_SPEC.md`.
-- One mystery — `content/cases/ravenscourt-manor.json`.
+- One mystery — `content/cases/ravenwood-manor.json`.
 - One question pack — `content/trivia/general-knowledge-vol-1.json`.
 - The content validator — `tools/validate.mjs` (`npm run validate`).
 - Pure engine core — `src/engine/contentLoader.mjs` (tier split, grading,
@@ -64,7 +64,7 @@ them to save effort.
    and the public clues must narrow to exactly one solution. Run `npm run validate`
    before shipping ANY pack — never ship an unvalidated one. Wire it into a
    pre-commit hook or CI.
-4. **Content is data; the engine is generic.** Never hardcode Ravenscourt specifics
+4. **Content is data; the engine is generic.** Never hardcode Ravenwood specifics
    into engine or UI. Everything case-specific comes from the loaded pack, so the
    same code plays every mystery and every trivia pack.
 
@@ -128,5 +128,5 @@ Keep engine logic pure and platform-free; keep Firebase at the edges.
 ## Definition of done — v1 vertical slice
 One full loop, high fidelity: lobby (with trivia-pack selection) → one trivia round →
 one Killing-Floor minigame → evidence on the corkboard → the Accusation finale, using
-the Ravenscourt case + the General Knowledge pack, with the secret tier provably
+the Ravenwood case + the General Knowledge pack, with the secret tier provably
 unreachable from any client.
