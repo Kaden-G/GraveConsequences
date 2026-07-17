@@ -24,8 +24,9 @@ const triviaPack = () => load("content/trivia/general-knowledge-vol-1.json");
 
 // ---- phase machine ---------------------------------------------------------
 
-test("lobby starts the trivia round", () => {
-  assert.equal(transition(Phase.LOBBY, Event.START), Phase.TRIVIA);
+test("lobby opens the briefing, which leads into the first trivia round", () => {
+  assert.equal(transition(Phase.LOBBY, Event.START), Phase.BRIEFING);
+  assert.equal(transition(Phase.BRIEFING, Event.RESOLVE_DONE), Phase.TRIVIA);
 });
 
 test("a closed round goes to the reveal beat first", () => {

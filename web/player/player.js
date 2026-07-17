@@ -79,6 +79,15 @@ const views = {
       el("p", { className: "panel typed" }, "You're seated. Watch the parlour screen — the investigation is about to begin.")));
   },
 
+  briefing() {
+    const b = room.briefing || {};
+    app.replaceChildren(el("div", { className: "stack" },
+      el("div", { style: "font-size:2.6rem" }, "🕯️"),
+      el("p", { className: "typed muted", style: "margin:0" }, b.subtitle || "The case"),
+      el("h1", { className: "gaslit", style: "font-size:1.4rem" }, b.title || "A Death at Ravenwood"),
+      el("p", { className: "panel typed" }, "The crime is being laid out on the parlour screen. Ready your wits, sleuth — the interrogation begins soon.")));
+  },
+
   trivia() {
     const q = room.question;
     const answered = me.answer && me.answer.questionId === q?.id;

@@ -97,15 +97,22 @@ async function main() {
   const publicBlob = JSON.stringify(publicRoom.body);
   ok(!publicBlob.includes("answerIndex") && !/"solution"/.test(publicBlob), "public room doc leaks no answer key or solution");
 
-  // --- start + play until solvable (answer correctly every round) ---
+  // --- start opens the crime-scene briefing before any trivia ---
   await callFn("startGame", host.token, { roomId });
+  room = await readRoom(roomId, alice.token);
+  ok(room.phase === "briefing", "startGame opens the crime-scene briefing, not trivia");
+  ok((room.briefing?.beats || []).length >= 1 && !!room.briefing.title, "the briefing narrative is public on the room doc");
+
+  // --- play until solvable (answer correctly every round) ---
   let rounds = 0;
   let correctRounds = 0;
   let checkedReveal = false;
   while (rounds < 30) {
     room = await readRoom(roomId, alice.token);
     if (room.phase === "finale") break;
-    if (room.phase === "trivia") {
+    if (room.phase === "briefing") {
+      await callFn("beginTrivia", host.token, { roomId });
+    } else if (room.phase === "trivia") {
       const qid = room.question.id;
       const correct = answerKey[qid];
       await callFn("submitAnswer", alice.token, { roomId, questionId: qid, choiceIndex: correct });
@@ -171,7 +178,9 @@ async function main() {
   let died = false;
   for (let i = 0; i < 60 && !died; i++) {
     let r = await readRoom(gRoom, carol.token);
-    if (r.phase === "trivia") {
+    if (r.phase === "briefing") {
+      await callFn("beginTrivia", carol.token, { roomId: gRoom });
+    } else if (r.phase === "trivia") {
       await callFn("submitAnswer", carol.token, { roomId: gRoom, questionId: r.question.id, choiceIndex: wrongIdx(r.question) });
       await callFn("resolveRound", carol.token, { roomId: gRoom });
     } else if (r.phase === "reveal") {
@@ -193,7 +202,8 @@ async function main() {
   const answerGhost = async (correct) => {
     let r = await readRoom(gRoom, carol.token);
     while (r.phase !== "trivia") {
-      if (r.phase === "reveal") await callFn("advanceRound", carol.token, { roomId: gRoom });
+      if (r.phase === "briefing") await callFn("beginTrivia", carol.token, { roomId: gRoom });
+      else if (r.phase === "reveal") await callFn("advanceRound", carol.token, { roomId: gRoom });
       else if (r.phase === "interstitial") await callFn("nextRound", carol.token, { roomId: gRoom });
       else break;
       r = await readRoom(gRoom, carol.token);

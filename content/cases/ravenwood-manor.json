@@ -24,10 +24,28 @@
     },
     "authorNote": "Trivia content is themed general knowledge, deliberately NOT story facts. The trivia is the lock; the clue it reveals is the treasure. Keeping the skill-check separate from the deduction content stops players from reverse-engineering the solution out of the questions, and keeps all solution-bearing data inside the secret tier."
   },
+  "briefing": {
+    "title": "A Death at Ravenwood",
+    "subtitle": "Ravenwood Manor · Autumn, 1872",
+    "beats": [
+      {
+        "heading": "The Gathering",
+        "body": "Fog rolled off the moor the night Lord Edmund Ravenwood summoned the Ravenwood Society — six confidants bound by oaths none will speak aloud — to the manor. The purpose of the meeting, he took to his grave."
+      },
+      {
+        "heading": "The Body Was Moved",
+        "body": "By dawn the master lay dead in the Grand Foyer. But the blood, the disarray, the dragged heels — all of it says he did not die there. The killer moved the body and staged the scene, and so the true room of the murder is a mystery we must yet solve."
+      },
+      {
+        "heading": "The Charge",
+        "body": "Six guests remain beneath this roof, and any one of them is a murderer. Every guest hides a motive, every room a secret, every implement a possible weapon. Answer true, sleuths, and the evidence falls into place — until only the killer, the weapon, and the room where it truly happened remain."
+      }
+    ]
+  },
   "board": {
     "victim": {
       "name": "Lord Edmund Ravenwood",
-      "flavor": "Master of the estate, found lifeless the morning after a dinner party."
+      "flavor": "Master of Ravenwood and head of its secret society — found dead, and moved, the morning after he summoned them."
     },
     "suspects": [
       {

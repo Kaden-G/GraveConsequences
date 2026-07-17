@@ -18,6 +18,7 @@ let boardBuilt = false;
 let seenReveals = 0;
 let currentRoom = null;
 let hostLoopStarted = false;
+let briefingBeat = 0; // host-paced position in the crime-scene briefing
 const firing = { resolve: -1, advance: -1 }; // guard: fire each host action once per round
 
 function toast(msg) {
@@ -44,11 +45,11 @@ function render(room) {
   startHostLoop();
   buildBoardOnce(room);
   updateBoard(room);
-  // The corkboard is empty until the investigation begins — keep the lobby focused
-  // on the join address + room code (Jackbox-style), then reveal the board.
-  const inLobby = room.phase === "lobby";
-  board.classList.toggle("hidden", inLobby);
-  stage.classList.toggle("lobby", inLobby);
+  // The corkboard is empty until the investigation begins — keep the lobby + briefing
+  // focused (join code, then the crime-scene story), then reveal the board.
+  const preGame = room.phase === "lobby" || room.phase === "briefing";
+  board.classList.toggle("hidden", preGame);
+  stage.classList.toggle("lobby", preGame);
   const fn = phases[room.phase] || phases.lobby;
   fn(room);
 }
@@ -194,6 +195,44 @@ const phases = {
       el("div", { style: "margin-top:0.6rem" }, rosterEl(room)),
       hostBtn(room, "Begin the Investigation", () => api.startGame({ roomId }), "brass",
         Object.keys(room.roster || {}).length < 1)));
+  },
+
+  // The crime-scene briefing — host walks the beats, then opens the interrogation.
+  briefing(room) {
+    const b = room.briefing;
+    if (!b || !(b.beats || []).length) {
+      return stage.replaceChildren(el("div", { className: "stack" },
+        hostBtn(room, "Begin the Interrogation", () => api.beginTrivia({ roomId }), "brass")));
+    }
+    const beats = b.beats;
+    const i = Math.min(briefingBeat, beats.length - 1);
+    const beat = beats[i] || {};
+    const last = i >= beats.length - 1;
+
+    const dots = el("div", { className: "beat-dots" },
+      ...beats.map((_, k) => el("span", { className: "bd" + (k <= i ? " on" : "") })));
+
+    const btn = el("button", { className: "brass", style: "font-size:1.1rem" }, last ? "Begin the Interrogation" : "Continue");
+    btn.onclick = async () => {
+      if (last) {
+        btn.disabled = true;
+        try { await api.beginTrivia({ roomId }); } catch (e) { toast(errText(e)); btn.disabled = false; }
+      } else {
+        briefingBeat = i + 1;
+        phases.briefing(currentRoom);
+      }
+    };
+    const control = isHost(room) ? btn : el("p", { className: "muted typed" }, "The host is presenting the case…");
+
+    stage.replaceChildren(el("div", { className: "stack briefing-stack" },
+      el("p", { className: "typed muted", style: "margin:0" }, b.subtitle || ""),
+      el("h1", { className: "gaslit" }, b.title || "The Case"),
+      el("div", { className: "card briefing-card" },
+        el("h2", { className: "gaslit", style: "font-size:1.4rem;margin-bottom:0.4em" }, beat.heading || ""),
+        el("p", { className: "serif-body", style: "font-size:1.2rem;line-height:1.55" }, beat.body || "")),
+      el("p", { className: "typed", style: "color:var(--brass-bright);margin:0" }, `The deceased — ${room.victim?.name || ""}`),
+      dots,
+      control));
   },
 
   trivia(room) {

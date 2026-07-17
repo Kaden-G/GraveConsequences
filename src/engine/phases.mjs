@@ -4,6 +4,7 @@
 
 export const Phase = {
   LOBBY: "lobby",
+  BRIEFING: "briefing", // crime-scene + backstory before the first question
   TRIVIA: "trivia",
   REVEAL: "reveal", // timer closed the round — show who answered what before advancing
   KILLING_FLOOR: "killing_floor",
@@ -26,7 +27,10 @@ export const Event = {
 export function transition(phase, event, ctx = {}) {
   switch (phase) {
     case Phase.LOBBY:
-      if (event === Event.START) return Phase.TRIVIA;
+      if (event === Event.START) return Phase.BRIEFING;
+      break;
+    case Phase.BRIEFING:
+      if (event === Event.RESOLVE_DONE) return Phase.TRIVIA; // host finishes the briefing
       break;
     case Phase.TRIVIA:
       if (event === Event.KILLER_STRIKES) return Phase.KILLING_FLOOR;

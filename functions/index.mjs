@@ -124,6 +124,7 @@ export const createRoom = onCall(async (request) => {
     round: 0,
     caseId: publicState.caseId,
     title: publicState.title,
+    briefing: publicState.briefing,
     victim: publicState.victim,
     board: publicState.board,
     cleared: publicState.cleared,
@@ -211,8 +212,23 @@ export const startGame = onCall(async (request) => {
   if (room.phase !== Phase.LOBBY) throw new HttpsError("failed-precondition", "Already started.");
   if (Object.keys(room.roster || {}).length < 1) throw new HttpsError("failed-precondition", "Need at least one sleuth.");
 
+  // Open the crime-scene briefing first; beginTrivia starts the actual questions.
+  await roomRef(roomId).update({ phase: Phase.BRIEFING });
+  return { phase: Phase.BRIEFING };
+});
+
+// ============================================================================
+// beginTrivia — host closes the briefing and opens the first trivia round.
+// ============================================================================
+export const beginTrivia = onCall(async (request) => {
+  const uid = requireAuth(request);
+  const roomId = request.data?.roomId;
+  const room = await getRoomOrThrow(roomId);
+  if (room.hostUid !== uid) throw new HttpsError("permission-denied", "Only the host can begin.");
+  if (room.phase !== Phase.BRIEFING) throw new HttpsError("failed-precondition", "Not in the briefing.");
+
   await loadNextQuestion(roomId, 1);
-  return { ok: true };
+  return { phase: Phase.TRIVIA };
 });
 
 // Shared: advance the secret question cursor, publish the next question, reset answers.

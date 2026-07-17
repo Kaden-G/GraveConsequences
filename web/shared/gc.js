@@ -51,6 +51,7 @@ export const api = {
   createRoom: call("createRoom"),
   joinRoom: call("joinRoom"),
   startGame: call("startGame"),
+  beginTrivia: call("beginTrivia"),
   submitAnswer: call("submitAnswer"),
   resolveRound: call("resolveRound"),
   advanceRound: call("advanceRound"),

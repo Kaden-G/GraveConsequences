@@ -10,6 +10,7 @@ export function loadContent(casePack, triviaPacks) {
   const publicState = {
     caseId: casePack.meta.id,
     title: casePack.meta.title,
+    briefing: casePack.briefing || null, // pre-game crime-scene narrative (public)
     victim: casePack.board.victim,
     board: {
       suspects: casePack.board.suspects,
