@@ -28,13 +28,17 @@ test("lobby starts the trivia round", () => {
   assert.equal(transition(Phase.LOBBY, Event.START), Phase.TRIVIA);
 });
 
-test("all-correct trivia goes to the interstitial, not the killing floor", () => {
-  const next = transition(Phase.TRIVIA, Event.ANSWERS_IN, { someoneWrong: () => false });
+test("a closed round goes to the reveal beat first", () => {
+  assert.equal(transition(Phase.TRIVIA, Event.ANSWERS_IN), Phase.REVEAL);
+});
+
+test("an all-correct reveal advances to the interstitial, not the killing floor", () => {
+  const next = transition(Phase.REVEAL, Event.RESOLVE_DONE, { someoneWrong: () => false });
   assert.equal(next, Phase.INTERSTITIAL);
 });
 
-test("a wrong answer routes the round to the killing floor", () => {
-  const next = transition(Phase.TRIVIA, Event.ANSWERS_IN, { someoneWrong: () => true });
+test("a reveal with a wrong answer routes to the killing floor", () => {
+  const next = transition(Phase.REVEAL, Event.RESOLVE_DONE, { someoneWrong: () => true });
   assert.equal(next, Phase.KILLING_FLOOR);
 });
 

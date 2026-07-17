@@ -53,6 +53,7 @@ export const api = {
   startGame: call("startGame"),
   submitAnswer: call("submitAnswer"),
   resolveRound: call("resolveRound"),
+  advanceRound: call("advanceRound"),
   drinkChalice: call("drinkChalice"),
   nextRound: call("nextRound"),
   makeAccusation: call("makeAccusation"),

@@ -30,6 +30,18 @@
 .options-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.8rem; width:min(80vw,900px); margin-top:0.8rem; }
 .opt { font-family:var(--body); font-size:1.4rem; }
 
+/* reveal beat — tiles with the sleuths who picked each answer */
+.reveal-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.8rem; width:min(80vw,900px); margin-top:0.6rem; }
+.reveal-tile { background:linear-gradient(180deg, var(--parchment), var(--parchment-dark)); color:var(--ink);
+  border-radius:4px; padding:0.7rem 0.9rem; border:2px solid rgba(74,14,14,0.35); min-height:74px;
+  box-shadow:0 6px 14px var(--shadow); transition:box-shadow 0.2s ease; }
+.reveal-tile.correct { border-color:#2f7d3f; background:linear-gradient(180deg,#e2f2da,#c3e0b4); box-shadow:0 0 22px rgba(47,125,63,0.6); }
+.reveal-tile.wrong { border-color:#7d1414; background:linear-gradient(180deg,#f1dcdc,#e0b6b6); }
+.reveal-tile .opt-label { font-family:var(--display); font-weight:600; font-size:1.05rem; }
+.reveal-tile .mark { color:#1f6d2f; font-weight:900; }
+.reveal-tile .pickers { display:flex; gap:0.35rem; flex-wrap:wrap; margin-top:0.45rem; min-height:1.7rem; }
+.reveal-tile .picker-av { font-size:1.5rem; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.45)); }
+
 .proximity { display:flex; gap:0.5rem; align-items:center; justify-content:center; font-family:var(--type); }
 .proximity .pip { width:22px; height:22px; border-radius:50%; border:2px solid var(--brass); background:transparent; }
 .proximity .pip.lit { background:var(--oxblood-bright); box-shadow:0 0 12px var(--oxblood-bright); }

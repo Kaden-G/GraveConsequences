@@ -38,6 +38,7 @@ const GOBLETS = 5; // goblets offered on the Killing Floor
 const FATAL_GOBLETS = 2; // how many are laced
 const STRIKE_EVERY = 4; // "The Killer Strikes" drags everyone to the floor every N rounds
 const ANSWER_SECONDS = 20;
+const REVEAL_SECONDS = 5; // the reveal beat: show who answered what before advancing
 const MAX_KILLER_PROXIMITY = 3; // wrong finale accusations before the Killer wins
 const REVIVE_STREAK = 3; // correct-in-a-row a Ghost needs to Quicken back to life
 
@@ -130,6 +131,10 @@ export const createRoom = onCall(async (request) => {
     question: null,
     reveals: [],
     quickenings: [],
+    roundResult: null,
+    answeredUids: [],
+    revealDeadline: null,
+    pending: null,
     killingFloor: null,
     finale: null,
     solvable: false,
@@ -233,6 +238,10 @@ async function loadNextQuestion(roomId, round) {
     question: { ...question, deadline: Date.now() + ANSWER_SECONDS * 1000 },
     killingFloor: null,
     quickenings: [],
+    roundResult: null,
+    answeredUids: [],
+    revealDeadline: null,
+    pending: null,
   });
   await batch.commit();
 }
@@ -270,8 +279,13 @@ export const submitAnswer = onCall(async (request) => {
 
   const pref = playersCol(roomId).doc(uid);
   if (!(await pref.get()).exists) throw new HttpsError("permission-denied", "You are not in this room.");
-  // Store the choice only — never the correctness — so no answer key is exposed.
-  await pref.update({ answer: { questionId, choiceIndex } });
+  // Store the choice privately (the answer key stays secret; the choice is revealed
+  // only at round close). answeredUids is public so the host can auto-close early
+  // once everyone has answered — it exposes WHO answered, never WHAT.
+  const batch = db.batch();
+  batch.update(pref, { answer: { questionId, choiceIndex } });
+  batch.update(roomRef(roomId), { answeredUids: FieldValue.arrayUnion(uid) });
+  await batch.commit();
   return { ok: true };
 });
 
@@ -296,9 +310,11 @@ export const resolveRound = onCall(async (request) => {
 
   const wrongAlive = [];
   const quickenedUids = new Set(); // reanimated this round — spared this round's Strike so the beat lands
+  const answers = {}; // public at reveal: uid -> the option index they chose (never before close)
   for (const p of players.docs) {
     const pd = p.data();
     const choice = pd.answer?.questionId === secret.currentQuestionId ? pd.answer.choiceIndex : null;
+    if (choice !== null) answers[p.id] = choice;
     const correct = choice !== null && isCorrect(secret, secret.currentQuestionId, choice);
 
     if (correct) {
@@ -345,10 +361,6 @@ export const resolveRound = onCall(async (request) => {
   const strikeEvery = room.settings?.strikeEvery ?? STRIKE_EVERY;
   const killerStrikes = strikeEvery > 0 && room.round > 0 && room.round % strikeEvery === 0;
 
-  // Persist graded board + dispensing cursor.
-  batch.update(roomRef(roomId), { cleared: publicState.cleared, reveals, solvable, quickenings });
-  batch.update(secretRef(roomId), { cursors: secret.cursors });
-
   // Killer Strikes pulls EVERYONE (alive + ghosts, so ghosts can be revived) — except
   // anyone who just Quickened this round, so their revival beat isn't stomped. An
   // ordinary cull pulls only those who answered wrong.
@@ -356,45 +368,79 @@ export const resolveRound = onCall(async (request) => {
     ? players.docs.map((p) => p.id).filter((id) => !quickenedUids.has(id))
     : wrongAlive;
 
-  let nextPhase;
+  // Decide what happens AFTER the reveal, but don't transition yet — the reveal beat
+  // shows who answered what first (advanceRound applies this).
+  let pending;
   if (atRisk.length > 0) {
     const fatalByUid = {};
     for (const id of atRisk) fatalByUid[id] = rollFatalGoblets();
     batch.update(secretRef(roomId), { killingFloorFatal: fatalByUid });
-    batch.update(roomRef(roomId), {
+    pending = {
+      kind: "killing_floor",
+      atRisk,
+      reason: killerStrikes ? "strike" : "cull",
+      label: killerStrikes ? room.title : "A wrong answer draws blood",
+    };
+  } else if (solvable || quickenings.length > 0) {
+    // Something the board can't say on its own (finale opening / a Quickening).
+    pending = { kind: "interstitial" };
+  } else {
+    pending = { kind: "trivia" }; // a plain clue round — flow straight on after the reveal
+  }
+
+  // Go to the REVEAL beat: publish the graded board, the answer key + who chose what.
+  batch.update(roomRef(roomId), {
+    phase: Phase.REVEAL,
+    cleared: publicState.cleared,
+    reveals,
+    solvable,
+    quickenings,
+    roundResult: { correctIndex: secret.triviaAnswers[secret.currentQuestionId], answers },
+    revealDeadline: Date.now() + REVEAL_SECONDS * 1000,
+    pending,
+  });
+  batch.update(secretRef(roomId), { cursors: secret.cursors });
+  Object.entries(rosterUpdates).forEach(([k, v]) => batch.update(roomRef(roomId), { [k]: v }));
+
+  await batch.commit();
+  return { phase: Phase.REVEAL, solvable, wrong: wrongAlive.length };
+});
+
+// ============================================================================
+// advanceRound — leave the reveal beat and apply the pending outcome. Host-driven
+// (its timer fires once the reveal deadline passes).
+// ============================================================================
+export const advanceRound = onCall(async (request) => {
+  const uid = requireAuth(request);
+  const roomId = request.data?.roomId;
+  const room = await getRoomOrThrow(roomId);
+  if (room.hostUid !== uid) throw new HttpsError("permission-denied", "Only the host advances.");
+  if (room.phase !== Phase.REVEAL) throw new HttpsError("failed-precondition", "Not a reveal.");
+
+  const pending = room.pending || { kind: "trivia" };
+  if (pending.kind === "killing_floor") {
+    await roomRef(roomId).update({
       phase: Phase.KILLING_FLOOR,
+      pending: null,
       killingFloor: {
         active: true,
-        reason: killerStrikes ? "strike" : "cull",
-        label: killerStrikes ? room.title : "A wrong answer draws blood",
+        reason: pending.reason,
+        label: pending.label,
         goblets: GOBLETS,
-        atRisk,
+        atRisk: pending.atRisk,
         resolved: {},
         survivors: [],
         dead: [],
       },
     });
-    nextPhase = Phase.KILLING_FLOOR;
+    return { phase: Phase.KILLING_FLOOR };
   }
-  Object.entries(rosterUpdates).forEach(([k, v]) => batch.update(roomRef(roomId), { [k]: v }));
-
-  if (nextPhase === Phase.KILLING_FLOOR) {
-    await batch.commit();
-    return { phase: nextPhase, solvable, wrong: wrongAlive.length };
+  if (pending.kind === "interstitial") {
+    await roomRef(roomId).update({ phase: Phase.INTERSTITIAL, pending: null });
+    return { phase: Phase.INTERSTITIAL };
   }
-
-  // Nobody culled. The clue is already on the corkboard, so a "case tightens" screen
-  // would only restate it — pause ONLY for something genuinely new: the finale opening
-  // or a Quickening. Otherwise flow straight to the next question.
-  if (solvable || quickenings.length > 0) {
-    batch.update(roomRef(roomId), { phase: Phase.INTERSTITIAL });
-    await batch.commit();
-    return { phase: Phase.INTERSTITIAL, solvable, wrong: 0 };
-  }
-
-  await batch.commit();
   await loadNextQuestion(roomId, room.round + 1);
-  return { phase: Phase.TRIVIA, solvable, wrong: 0 };
+  return { phase: Phase.TRIVIA };
 });
 
 function rollFatalGoblets() {

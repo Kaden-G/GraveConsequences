@@ -88,10 +88,14 @@ const views = {
       el("p", { className: "typed muted", style: "margin:0" }, `Round ${room.round}`),
       el("h1", { className: "gaslit", style: "font-size:1.3rem" }, q?.prompt || "…"));
     const opts = (q?.options || []).map((o, i) => {
+      const mine = answered && me.answer.choiceIndex === i;
       let cls = "answer-btn";
-      if (graded) cls += me.answer.choiceIndex === i ? (me.answer.correct ? " correct" : " wrong") : "";
-      else if (answered && me.answer.choiceIndex === i) cls += " locked";
-      const b = el("button", { className: cls }, `${"ABCD"[i]}.  ${o}`);
+      let icon = "";
+      if (graded && mine) { cls += me.answer.correct ? " correct" : " wrong"; icon = me.answer.correct ? "✓" : "✗"; }
+      else if (!graded && mine) cls += " selected"; // distinct colour for the choice you locked
+      const b = el("button", { className: cls },
+        el("span", {}, `${"ABCD"[i]}.  ${o}`),
+        icon ? el("span", { className: "mark" }, icon) : "");
       b.disabled = answered;
       b.onclick = async () => {
         try { await api.submitAnswer({ roomId, questionId: q.id, choiceIndex: i }); toast("Answer locked."); }
@@ -105,6 +109,11 @@ const views = {
     app.replaceChildren(header, el("div", { className: "stack" }, ...opts),
       graded ? el("p", { className: "panel" }, gradedMsg)
              : answered ? el("p", { className: "muted typed" }, "Locked. Await the reveal.") : "");
+  },
+
+  // At round close the phase is REVEAL — same question, now graded (✓/✗ on your pick).
+  reveal() {
+    views.trivia();
   },
 
   killing_floor() {

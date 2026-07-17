@@ -16,6 +16,9 @@ let uid = null;
 let roomId = null;
 let boardBuilt = false;
 let seenReveals = 0;
+let currentRoom = null;
+let hostLoopStarted = false;
+const firing = { resolve: -1, advance: -1 }; // guard: fire each host action once per round
 
 function toast(msg) {
   toastEl.textContent = msg;
@@ -37,6 +40,8 @@ async function boot() {
 }
 
 function render(room) {
+  currentRoom = room;
+  startHostLoop();
   buildBoardOnce(room);
   updateBoard(room);
   // The corkboard is empty until the investigation begins — keep the lobby focused
@@ -46,6 +51,31 @@ function render(room) {
   stage.classList.toggle("lobby", inLobby);
   const fn = phases[room.phase] || phases.lobby;
   fn(room);
+}
+
+// The host TV drives the round clock: it auto-closes trivia (timer up or everyone
+// answered) and auto-advances past the reveal beat. Fires each action once per round.
+function startHostLoop() {
+  if (hostLoopStarted) return;
+  hostLoopStarted = true;
+  setInterval(() => {
+    const room = currentRoom;
+    if (!room || room.hostUid !== uid) return;
+    if (room.phase === "trivia" && room.question) {
+      const total = Object.keys(room.roster || {}).length;
+      const allAnswered = total > 0 && (room.answeredUids || []).length >= total;
+      const timeUp = Date.now() >= (room.question.deadline || 0);
+      if ((timeUp || allAnswered) && firing.resolve !== room.round) {
+        firing.resolve = room.round;
+        api.resolveRound({ roomId }).catch(() => (firing.resolve = -1));
+      }
+    } else if (room.phase === "reveal") {
+      if (Date.now() >= (room.revealDeadline || 0) && firing.advance !== room.round) {
+        firing.advance = room.round;
+        api.advanceRound({ roomId }).catch(() => (firing.advance = -1));
+      }
+    }
+  }, 400);
 }
 
 // ---- corkboard (built once, updated live) ---------------------------------
@@ -169,14 +199,37 @@ const phases = {
   trivia(room) {
     const q = room.question;
     const secs = Math.max(0, Math.round(((q?.deadline || Date.now()) - Date.now()) / 1000));
+    const answered = (room.answeredUids || []).length;
+    const total = Object.keys(room.roster || {}).length;
     stage.replaceChildren(el("div", { className: "stack" },
       el("p", { className: "typed muted", style: "margin:0" }, `Round ${room.round} · interrogate the scene`),
       el("h1", { className: "gaslit" }, q?.prompt || "…"),
       el("div", { className: "options-grid" },
         ...(q?.options || []).map((o, i) => el("div", { className: "card opt" }, `${"ABCD"[i]}. ${o}`))),
       timerBar(secs, 20),
-      hostBtn(room, "Close the Round", () => api.resolveRound({ roomId }), "brass")));
+      el("p", { className: "typed muted" }, `${answered} of ${total} answered · the round closes when the clock runs out`)));
     tickTimer(q?.deadline);
+  },
+
+  // The reveal beat: each sleuth's avatar lands on the tile they chose; the true
+  // answer glows green, wrong picks red. Auto-advances (host loop) after a few seconds.
+  reveal(room) {
+    const q = room.question;
+    const rr = room.roundResult || { correctIndex: -1, answers: {} };
+    const roster = room.roster || {};
+    const byOption = {};
+    for (const [pid, ci] of Object.entries(rr.answers || {})) (byOption[ci] = byOption[ci] || []).push(roster[pid] || {});
+    const tiles = (q?.options || []).map((o, i) => {
+      const correct = i === rr.correctIndex;
+      const pickers = byOption[i] || [];
+      return el("div", { className: "reveal-tile" + (correct ? " correct" : pickers.length ? " wrong" : "") },
+        el("div", { className: "opt-label" }, `${"ABCD"[i]}. ${o}`, correct ? el("span", { className: "mark" }, " ✓") : ""),
+        el("div", { className: "pickers" }, ...pickers.map((p) => el("span", { className: "picker-av" }, p.avatar || "🔍"))));
+    });
+    stage.replaceChildren(el("div", { className: "stack" },
+      el("p", { className: "typed muted", style: "margin:0" }, "Time's up — the answers"),
+      el("h1", { className: "gaslit", style: "font-size:1.3rem" }, q?.prompt || ""),
+      el("div", { className: "reveal-grid" }, ...tiles)));
   },
 
   killing_floor(room) {

@@ -3,10 +3,16 @@
 .avatars { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
 .avatars button { font-size: 1.6rem; padding: 0.4em 0.5em; background: rgba(0,0,0,0.3); }
 .avatars button.sel { background: linear-gradient(180deg, var(--brass-bright), var(--brass)); color: var(--ink); }
-.answer-btn { width: 100%; text-align: left; font-family: var(--body); font-size: 1.15rem; padding: 1em; }
-.answer-btn.locked { background: linear-gradient(180deg, var(--green), var(--green-deep)); }
-.answer-btn.correct { background: linear-gradient(180deg, #2f7d3f, #14401f); }
-.answer-btn.wrong { background: linear-gradient(180deg, #7d1414, #3a0808); opacity: 0.9; }
+.answer-btn { width: 100%; text-align: left; font-family: var(--body); font-size: 1.15rem; padding: 1em;
+  display: flex; justify-content: space-between; align-items: center; gap: 0.5em; }
+.answer-btn .mark { font-size: 1.5em; font-weight: 900; line-height: 1; }
+/* The choice you locked in — a distinct gold so you can tell what you picked. */
+.answer-btn.selected { background: linear-gradient(180deg, var(--brass-bright), var(--brass)); color: var(--ink);
+  border-color: #8a6d12; box-shadow: 0 0 16px rgba(232,200,96,0.6); }
+.answer-btn.correct { background: linear-gradient(180deg, #2f7d3f, #14401f); border-color: #8fdf9f; }
+.answer-btn.correct .mark { color: #b8f5c4; }
+.answer-btn.wrong { background: linear-gradient(180deg, #7d1414, #3a0808); border-color: #e79a9a; }
+.answer-btn.wrong .mark { color: #ffb0b0; }
 .leads { display: flex; flex-direction: column; gap: 0.6rem; }
 .lead { background: #fffef5; color: var(--ink); font-family: var(--type); font-size: 0.9rem; padding: 0.7rem; border-left: 4px solid var(--green); border-radius: 2px; }
 .lead .tag { display:block; font-family:var(--display); font-size:0.7rem; color:var(--green); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.2rem; }

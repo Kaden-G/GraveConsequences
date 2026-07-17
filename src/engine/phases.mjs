@@ -5,6 +5,7 @@
 export const Phase = {
   LOBBY: "lobby",
   TRIVIA: "trivia",
+  REVEAL: "reveal", // timer closed the round — show who answered what before advancing
   KILLING_FLOOR: "killing_floor",
   INTERSTITIAL: "interstitial", // board update / narrative beat
   FINALE: "finale",
@@ -29,7 +30,11 @@ export function transition(phase, event, ctx = {}) {
       break;
     case Phase.TRIVIA:
       if (event === Event.KILLER_STRIKES) return Phase.KILLING_FLOOR;
-      if (event === Event.ANSWERS_IN)
+      // The timer (or everyone answering) closes the round into the reveal beat.
+      if (event === Event.ANSWERS_IN) return Phase.REVEAL;
+      break;
+    case Phase.REVEAL:
+      if (event === Event.RESOLVE_DONE)
         return ctx.someoneWrong?.() ? Phase.KILLING_FLOOR : Phase.INTERSTITIAL;
       break;
     case Phase.KILLING_FLOOR:

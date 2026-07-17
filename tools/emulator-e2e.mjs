@@ -101,6 +101,7 @@ async function main() {
   await callFn("startGame", host.token, { roomId });
   let rounds = 0;
   let correctRounds = 0;
+  let checkedReveal = false;
   while (rounds < 30) {
     room = await readRoom(roomId, alice.token);
     if (room.phase === "finale") break;
@@ -112,6 +113,14 @@ async function main() {
       const res = await callFn("resolveRound", host.token, { roomId });
       ok(res.wrong === 0, `round ${room.round}: both correct, nobody culled`);
       correctRounds++;
+    } else if (room.phase === "reveal") {
+      if (!checkedReveal) {
+        checkedReveal = true;
+        const rr = room.roundResult || {};
+        ok(typeof rr.correctIndex === "number", "reveal publishes the correct answer index");
+        ok(Object.keys(rr.answers || {}).length === 2, "reveal publishes both players' chosen options (for the host tiles)");
+      }
+      await callFn("advanceRound", host.token, { roomId });
     } else if (room.phase === "interstitial") {
       await callFn("nextRound", host.token, { roomId });
     }
@@ -158,13 +167,15 @@ async function main() {
   const isGhost = (d) => d.isGhost.booleanValue === true;
   const streakOf = (d) => Number(d.streak.integerValue);
 
-  // Die: keep answering wrong (→ Killing Floor) and drinking until a laced goblet lands.
+  // Die: keep answering wrong (→ reveal → Killing Floor) and drinking until laced.
   let died = false;
-  for (let i = 0; i < 40 && !died; i++) {
+  for (let i = 0; i < 60 && !died; i++) {
     let r = await readRoom(gRoom, carol.token);
     if (r.phase === "trivia") {
       await callFn("submitAnswer", carol.token, { roomId: gRoom, questionId: r.question.id, choiceIndex: wrongIdx(r.question) });
       await callFn("resolveRound", carol.token, { roomId: gRoom });
+    } else if (r.phase === "reveal") {
+      await callFn("advanceRound", carol.token, { roomId: gRoom });
     } else if (r.phase === "killing_floor") {
       const res = await callFn("drinkChalice", carol.token, { roomId: gRoom, gobletIndex: 0 });
       died = res.fatal;
@@ -178,10 +189,15 @@ async function main() {
   let cd = await carolDoc();
   ok(isGhost(cd) && streakOf(cd) === 0, "death sets Ghost state and resets the revival streak to 0");
 
-  // Reset check: one correct (streak 1), then a wrong answer drops it back to 0 (no penalty, still a Ghost).
+  // Walk the room to a live trivia question, then answer (correct or wrong) and close.
   const answerGhost = async (correct) => {
-    const r = await readRoom(gRoom, carol.token);
-    if (r.phase !== "trivia") { await callFn("nextRound", carol.token, { roomId: gRoom }); return answerGhost(correct); }
+    let r = await readRoom(gRoom, carol.token);
+    while (r.phase !== "trivia") {
+      if (r.phase === "reveal") await callFn("advanceRound", carol.token, { roomId: gRoom });
+      else if (r.phase === "interstitial") await callFn("nextRound", carol.token, { roomId: gRoom });
+      else break;
+      r = await readRoom(gRoom, carol.token);
+    }
     const idx = correct ? answerKey[r.question.id] : wrongIdx(r.question);
     await callFn("submitAnswer", carol.token, { roomId: gRoom, questionId: r.question.id, choiceIndex: idx });
     await callFn("resolveRound", carol.token, { roomId: gRoom });
