@@ -62,6 +62,9 @@ function startHostLoop() {
   setInterval(() => {
     const room = currentRoom;
     if (!room || room.hostUid !== uid) return;
+    // Auto-close the answer window (timer up or everyone in). The reveal that
+    // follows does NOT auto-advance — the host advances it manually so the group
+    // has time to study the board.
     if (room.phase === "trivia" && room.question) {
       const total = Object.keys(room.roster || {}).length;
       const allAnswered = total > 0 && (room.answeredUids || []).length >= total;
@@ -69,11 +72,6 @@ function startHostLoop() {
       if ((timeUp || allAnswered) && firing.resolve !== room.round) {
         firing.resolve = room.round;
         api.resolveRound({ roomId }).catch(() => (firing.resolve = -1));
-      }
-    } else if (room.phase === "reveal") {
-      if (Date.now() >= (room.revealDeadline || 0) && firing.advance !== room.round) {
-        firing.advance = room.round;
-        api.advanceRound({ roomId }).catch(() => (firing.advance = -1));
       }
     }
   }, 400);
@@ -282,10 +280,15 @@ const phases = {
         el("div", { className: "opt-label" }, `${"ABCD"[i]}. ${o}`, correct ? el("span", { className: "mark" }, " ✓") : ""),
         el("div", { className: "pickers" }, ...pickers.map((p) => el("span", { className: "picker-av" }, p.avatar || "🔍"))));
     });
+    const clueLanded = (room.roundResult && Object.keys(room.roundResult.answers || {}).length >= 0) &&
+      (room.reveals || []).some((r) => r.round === room.round);
     stage.replaceChildren(el("div", { className: "stack" },
       el("p", { className: "typed muted", style: "margin:0" }, "Time's up — the answers"),
       el("h1", { className: "gaslit", style: "font-size:1.3rem" }, q?.prompt || ""),
-      el("div", { className: "reveal-grid" }, ...tiles)));
+      el("div", { className: "reveal-grid" }, ...tiles),
+      el("p", { className: "typed muted", style: "margin:0.2rem 0 0" },
+        clueLanded ? "New evidence is on the board — study it, then continue." : "No new evidence — the group must do better."),
+      hostBtn(room, "Continue the Investigation", () => api.advanceRound({ roomId }), "brass")));
   },
 
   killing_floor(room) {

@@ -108,7 +108,9 @@ async function main() {
   let rounds = 0;
   let correctRounds = 0;
   let checkedReveal = false;
-  while (rounds < 30) {
+  // One clue per round now (majority-gated), so ~21 rounds to fully narrow; each
+  // round is a trivia + a reveal loop iteration, so allow plenty of headroom.
+  while (rounds < 80) {
     room = await readRoom(roomId, alice.token);
     if (room.phase === "finale") break;
     if (room.phase === "briefing") {

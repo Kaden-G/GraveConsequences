@@ -328,6 +328,8 @@ export const resolveRound = onCall(async (request) => {
   const wrongAlive = [];
   const quickenedUids = new Set(); // reanimated this round — spared this round's Strike so the beat lands
   const answers = {}; // public at reveal: uid -> the option index they chose (never before close)
+  let correctCount = 0;
+  const totalPlayers = players.size;
   for (const p of players.docs) {
     const pd = p.data();
     const choice = pd.answer?.questionId === secret.currentQuestionId ? pd.answer.choiceIndex : null;
@@ -335,19 +337,7 @@ export const resolveRound = onCall(async (request) => {
     const correct = choice !== null && isCorrect(secret, secret.currentQuestionId, choice);
 
     if (correct) {
-      // Each correct answer earns one public elimination onto the corkboard.
-      const clue = dispensePublicClue(secret);
-      if (clue) {
-        applyEffect(publicState, clue.effect);
-        reveals.push({
-          clueId: clue.id,
-          content: clue.content,
-          category: categoryOf(clue.effect, room.board),
-          target: clue.effect.target || null,
-          round: room.round,
-          by: pd.name,
-        });
-      }
+      correctCount++;
       // Vitality rises on every correct answer (upward-only). Track the streak.
       const streak = (pd.streak || 0) + 1;
       const vitality = (pd.vitality || 0) + 1;
@@ -371,6 +361,25 @@ export const resolveRound = onCall(async (request) => {
       // A wrong answer never subtracts Vitality — it only stalls the streak.
       batch.update(p.ref, { streak: 0, answer: pd.answer ? { ...pd.answer, correct: false } : null });
       if (pd.alive) wrongAlive.push(p.id);
+    }
+  }
+
+  // ONE clue per round, and only when a MAJORITY of the group answered correctly —
+  // so a big group doesn't dump five clues onto the board at once. (Vitality/streaks
+  // above stay per-player; this gates only the shared evidence.)
+  const majorityCorrect = correctCount * 2 > totalPlayers;
+  if (majorityCorrect) {
+    const clue = dispensePublicClue(secret);
+    if (clue) {
+      applyEffect(publicState, clue.effect);
+      reveals.push({
+        clueId: clue.id,
+        content: clue.content,
+        category: categoryOf(clue.effect, room.board),
+        target: clue.effect.target || null,
+        round: room.round,
+        by: null, // a shared find — no single author
+      });
     }
   }
 
