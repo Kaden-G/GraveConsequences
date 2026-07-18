@@ -57,6 +57,8 @@ table.nb-matrix th, table.nb-matrix td { border: 1px solid rgba(74,14,14,0.3); }
   background: #fffef5; -webkit-tap-highlight-color: transparent; }
 .nb-cell[data-mark="1"] { background: #f3d6d6; color: #a01818; }
 .nb-cell[data-mark="2"] { background: #d8efd0; color: #1f6d2f; }
+/* ruled out by the public board — a locked fact (muted, non-editable) */
+.nb-cell.nb-locked { background: repeating-linear-gradient(45deg,#ded7c6,#ded7c6 4px,#d5cdba 4px,#d5cdba 8px); color: #8a7a55; cursor: default; }
 
 .nb-legend-wrap { margin-top: 0.5rem; }
 .nb-legend { display: flex; flex-wrap: wrap; gap: 0.35rem 0.8rem; font-size: 0.72rem; color: #4a3a20; justify-content: center; }
@@ -70,6 +72,8 @@ table.nb-matrix th, table.nb-matrix td { border: 1px solid rgba(74,14,14,0.3); }
 .nb-room .nb-room-mk { font-weight: 900; width: 1.1em; text-align: center; color: #8a7a55; }
 .nb-room[data-mark="1"] { background: #f3d6d6; } .nb-room[data-mark="1"] .nb-room-mk { color: #a01818; }
 .nb-room[data-mark="2"] { background: #d8efd0; } .nb-room[data-mark="2"] .nb-room-mk { color: #1f6d2f; }
+.nb-room.nb-locked { background: repeating-linear-gradient(45deg,#ded7c6,#ded7c6 5px,#d5cdba 5px,#d5cdba 10px); cursor: default; color: #7a6c4d; }
+.nb-room.nb-locked .nb-room-mk { color: #8a7a55; }
 
 /* status banner (ghost / living / quickened) */
 .status { display:flex; flex-direction:column; align-items:center; gap:0.35rem; width:100%;

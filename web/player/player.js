@@ -67,6 +67,7 @@ function renderJoin(err) {
 function render() {
   if (!room || !me) return;
   ensureTracker();
+  syncTracker(); // reflect the public board's eliminations onto the grid
   const fn = views[room.phase] || views.lobby;
   fn();
   lastPhase = room.phase;
@@ -259,24 +260,34 @@ function panel(icon, title, body) {
 // Content-driven from room.board, so it matches whatever case is loaded.
 // ===========================================================================
 let trackerBuilt = false;
+let trackerState = null; // { cells:{suspId__wpnId:1|2}, rooms:{roomId:1|2} } — this player's own marks
 const WPN_ICON = { letter_opener: "🗡️", arsenic: "☠️", candlestick: "🕯️", cravat: "👔", poker: "🔥", pistol: "🔫" };
 const firstName = (name) => name.replace(/^(Lord|Lady|Dr\.|Mr\.|Miss|Colonel)\s+/, "").split(" ")[0];
 const nbKey = () => `gc-nb-${roomId}`;
 const nbLoad = () => { try { return JSON.parse(localStorage.getItem(nbKey())) || {}; } catch { return {}; } };
+const wIcon = (w) => WPN_ICON[w.id] || firstName(w.name)[0];
+const glyph = (st, isRoom) => (st === 1 ? "✗" : st === 2 ? "✓" : isRoom ? "○" : "");
 
 function ensureTracker() {
   if (trackerBuilt || !room || !me) return;
   trackerBuilt = true;
 
-  const state = nbLoad();
+  // Fresh notebook each game: this room has its own key, and we prune any prior
+  // game's notebook so nothing ever carries over into a new game.
+  try {
+    Object.keys(localStorage).filter((k) => k.startsWith("gc-nb-") && k !== nbKey()).forEach((k) => localStorage.removeItem(k));
+  } catch {}
+
+  const state = (trackerState = Object.assign({ cells: {}, rooms: {} }, nbLoad()));
   state.cells = state.cells || {};
   state.rooms = state.rooms || {};
   const save = () => { try { localStorage.setItem(nbKey(), JSON.stringify(state)); } catch {} };
-  const mark = (node, store, key) => {
+  const cycle = (node, store, key, isRoom) => {
+    if (node.classList.contains("nb-locked")) return; // ruled out by the board — a fact, not editable
     const next = ((store[key] || 0) + 1) % 3; // blank → ✗ → ✓ → blank
     if (next) store[key] = next; else delete store[key];
     node.dataset.mark = next;
-    node.textContent = next === 1 ? "✗" : next === 2 ? "✓" : "";
+    (isRoom ? node.querySelector(".nb-room-mk") : node).textContent = glyph(next, isRoom);
     save();
   };
 
@@ -284,36 +295,28 @@ function ensureTracker() {
 
   // suspect × weapon matrix
   const head = el("tr", {}, el("th", { className: "nb-corner" }, ""));
-  W.forEach((w) => head.append(el("th", { className: "nb-wh", title: w.name }, WPN_ICON[w.id] || firstName(w.name)[0])));
+  W.forEach((w) => head.append(el("th", { className: "nb-wh", title: w.name }, wIcon(w))));
   const body = S.map((s) => {
     const tr = el("tr", {}, el("th", { className: "nb-sh" }, firstName(s.name)));
     W.forEach((w) => {
       const key = `${s.id}__${w.id}`;
       const st = state.cells[key] || 0;
-      const cell = el("td", { className: "nb-cell", dataset: { mark: st } }, st === 1 ? "✗" : st === 2 ? "✓" : "");
-      cell.onclick = () => mark(cell, state.cells, key);
+      const cell = el("td", { className: "nb-cell", dataset: { mark: st, s: s.id, w: w.id } }, glyph(st, false));
+      cell.onclick = () => cycle(cell, state.cells, key, false);
       tr.append(cell);
     });
     return tr;
   });
   const table = el("table", { className: "nb-matrix" }, el("thead", {}, head), el("tbody", {}, ...body));
-
-  const legend = el("div", { className: "nb-legend" },
-    ...W.map((w) => el("span", {}, `${WPN_ICON[w.id] || firstName(w.name)[0]} ${w.name}`)));
+  const legend = el("div", { className: "nb-legend" }, ...W.map((w) => el("span", {}, `${wIcon(w)} ${w.name}`)));
 
   // rooms list
   const roomChips = R.map((r) => {
     const st = state.rooms[r.id] || 0;
-    const chip = el("button", { className: "nb-room", dataset: { mark: st } },
-      el("span", { className: "nb-room-mk" }, st === 1 ? "✗" : st === 2 ? "✓" : "○"),
+    const chip = el("button", { className: "nb-room", dataset: { mark: st, room: r.id } },
+      el("span", { className: "nb-room-mk" }, glyph(st, true)),
       el("span", {}, r.name));
-    chip.onclick = () => {
-      const next = ((state.rooms[r.id] || 0) + 1) % 3;
-      if (next) state.rooms[r.id] = next; else delete state.rooms[r.id];
-      chip.dataset.mark = next;
-      chip.querySelector(".nb-room-mk").textContent = next === 1 ? "✗" : next === 2 ? "✓" : "○";
-      save();
-    };
+    chip.onclick = () => cycle(chip, state.rooms, r.id, true);
     return chip;
   });
 
@@ -321,7 +324,7 @@ function ensureTracker() {
   const overlay = el("div", { className: "nb-overlay hidden" },
     el("div", { className: "nb-sheet" },
       el("div", { className: "nb-head" }, el("h2", { className: "gaslit" }, "Detective's Notebook"), closeBtn),
-      el("p", { className: "nb-hint" }, "Tap to cross off (✗) or flag as likely (✓). Private to you."),
+      el("p", { className: "nb-hint" }, "Tap to cross off (✗) or flag as likely (✓). Cards the board rules out are crossed for you automatically. Private to you."),
       el("div", { className: "nb-scroll" },
         el("div", { className: "nb-mtx-wrap" }, table),
         el("div", { className: "nb-legend-wrap" }, legend),
@@ -334,6 +337,35 @@ function ensureTracker() {
   toggle.onclick = () => overlay.classList.remove("hidden");
 
   document.body.append(toggle, overlay);
+  syncTracker();
+}
+
+// Overlay the PUBLIC board's eliminations onto the grid: a ruled-out suspect greys
+// its whole row, a ruled-out weapon its whole column, a ruled-out room its chip.
+// These are locked facts; the player's own marks show through on everything else.
+function syncTracker() {
+  if (!trackerBuilt || !room || !trackerState) return;
+  const cl = room.cleared || { suspect: [], weapon: [], room: [] };
+  const cs = new Set(cl.suspect), cw = new Set(cl.weapon), cr = new Set(cl.room);
+  document.querySelectorAll(".nb-cell").forEach((cell) => {
+    if (cs.has(cell.dataset.s) || cw.has(cell.dataset.w)) {
+      cell.classList.add("nb-locked"); cell.dataset.mark = "auto"; cell.textContent = "✗";
+    } else {
+      cell.classList.remove("nb-locked");
+      const st = trackerState.cells[`${cell.dataset.s}__${cell.dataset.w}`] || 0;
+      cell.dataset.mark = st; cell.textContent = glyph(st, false);
+    }
+  });
+  document.querySelectorAll(".nb-room").forEach((chip) => {
+    const mk = chip.querySelector(".nb-room-mk");
+    if (cr.has(chip.dataset.room)) {
+      chip.classList.add("nb-locked"); chip.dataset.mark = "auto"; mk.textContent = "✗";
+    } else {
+      chip.classList.remove("nb-locked");
+      const st = trackerState.rooms[chip.dataset.room] || 0;
+      chip.dataset.mark = st; mk.textContent = glyph(st, true);
+    }
+  });
 }
 
 boot();
