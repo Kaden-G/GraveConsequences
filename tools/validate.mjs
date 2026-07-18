@@ -42,6 +42,14 @@ export function validateCase(cp) {
   const elim = new Set(cp.clues.filter((c) => c.tier === "public" && c.effect.type === "eliminate").map((c) => c.effect.target));
   for (const cat of Object.keys(cats)) if (elim.has(sol[cat])) errs.push(`a clue eliminates the SOLUTION ${cat}`);
 
+  // no two public clues may eliminate the SAME card — a redundant elimination would
+  // be a "dud" round (a clue lands but nothing new clears on the board).
+  const elimSeen = new Set();
+  for (const c of cp.clues.filter((c) => c.tier === "public" && c.effect.type === "eliminate")) {
+    if (elimSeen.has(c.effect.target)) errs.push(`redundant elimination: more than one public clue removes '${c.effect.target}'`);
+    elimSeen.add(c.effect.target);
+  }
+
   // dispensing queues must reference real clues and cover all public clues
   const d = cp.clueDispensing;
   const pubClues = new Set(cp.clues.filter((c) => c.tier === "public").map((c) => c.id));

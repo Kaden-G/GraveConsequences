@@ -7,6 +7,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Phase, Event, transition } from "../src/engine/phases.mjs";
+import { validateCase } from "../tools/validate.mjs";
 import {
   loadContent,
   isCorrect,
@@ -135,6 +136,20 @@ test("private leads dispense from their own queue and never touch the public boa
   assert.ok(lead && lead.content, "expected a private lead");
   // A private confirm/lead must not be applied to the shared cleared lists.
   assert.equal(JSON.stringify(publicState.cleared), before);
+});
+
+test("the shipped case validates clean; the validator rejects a duplicate elimination", () => {
+  const cp = casePack();
+  assert.equal(validateCase(cp).errs.length, 0, "Ravenwood should validate with no errors");
+
+  // Two public clues eliminating the same card must be a hard error (a "dud" round).
+  const dup = JSON.parse(JSON.stringify(cp));
+  dup.clues.push({ id: "clue_dup", tier: "public", effect: { type: "eliminate", target: "library" } });
+  dup.clueDispensing.public.queue.push("clue_dup");
+  assert.ok(
+    validateCase(dup).errs.some((e) => /redundant elimination/.test(e)),
+    "expected a redundant-elimination error"
+  );
 });
 
 test("checkAccusation validates against the sealed solution only", () => {
