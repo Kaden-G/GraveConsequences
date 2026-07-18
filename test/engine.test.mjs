@@ -116,8 +116,8 @@ test("public clues dispense in authored order and narrow to exactly the solution
     dispensed++;
   }
 
-  // 11 public eliminations authored.
-  assert.equal(dispensed, 11);
+  // 21 public eliminations authored (5 suspects + 3 weapons + 13 rooms).
+  assert.equal(dispensed, 21);
   assert.equal(isCaseSolvable(publicState), true);
 
   // The single survivor in each category is the sealed solution.

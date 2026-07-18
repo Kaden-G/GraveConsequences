@@ -46,10 +46,90 @@
     "image": "assets/ravenwood-manor.jpg",
     "note": "Room hotspots as percentages of the image (x,y = top-left corner; w,h = size). Only the case's candidate rooms need entries; the rest of the manor is atmosphere.",
     "rooms": {
-      "ballroom": { "x": 34, "y": 6, "w": 30, "h": 24 },
-      "library": { "x": 19.5, "y": 32, "w": 15, "h": 18.5 },
-      "study": { "x": 18.7, "y": 51, "w": 16, "h": 13 },
-      "conservatory": { "x": 4.4, "y": 33, "w": 13, "h": 18 }
+      "billiard_room": {
+        "x": 21,
+        "y": 9,
+        "w": 13,
+        "h": 19
+      },
+      "ballroom": {
+        "x": 34,
+        "y": 6,
+        "w": 30,
+        "h": 24
+      },
+      "dining_room": {
+        "x": 66,
+        "y": 9,
+        "w": 13,
+        "h": 21
+      },
+      "kitchen": {
+        "x": 80,
+        "y": 8,
+        "w": 11,
+        "h": 14
+      },
+      "conservatory": {
+        "x": 4.4,
+        "y": 33,
+        "w": 13,
+        "h": 18
+      },
+      "library": {
+        "x": 19.5,
+        "y": 32,
+        "w": 15,
+        "h": 18.5
+      },
+      "drawing_room": {
+        "x": 66,
+        "y": 35,
+        "w": 14,
+        "h": 18
+      },
+      "pantry": {
+        "x": 85,
+        "y": 31,
+        "w": 10,
+        "h": 10
+      },
+      "servants_hall": {
+        "x": 85,
+        "y": 43,
+        "w": 10,
+        "h": 15
+      },
+      "study": {
+        "x": 18.7,
+        "y": 51,
+        "w": 16,
+        "h": 13
+      },
+      "guest_room_1": {
+        "x": 15,
+        "y": 64,
+        "w": 14,
+        "h": 15
+      },
+      "guest_room_2": {
+        "x": 30,
+        "y": 64,
+        "w": 13,
+        "h": 15
+      },
+      "guest_room_3": {
+        "x": 57,
+        "y": 64,
+        "w": 13,
+        "h": 15
+      },
+      "guest_room_4": {
+        "x": 72,
+        "y": 64,
+        "w": 13,
+        "h": 15
+      }
     }
   },
   "board": {
@@ -135,6 +215,56 @@
         "name": "The library",
         "flavor": "Floor-to-ceiling shelves and a cold hearth.",
         "mapRegion": "se"
+      },
+      {
+        "id": "billiard_room",
+        "name": "The billiard room",
+        "flavor": "Green baize and racked cues, off the great hall."
+      },
+      {
+        "id": "dining_room",
+        "name": "The dining room",
+        "flavor": "The long table where the Society supped."
+      },
+      {
+        "id": "kitchen",
+        "name": "The kitchen",
+        "flavor": "Copper and coal-smoke at the back of the house."
+      },
+      {
+        "id": "pantry",
+        "name": "The pantry",
+        "flavor": "Shelved and bolted, off the servants' wing."
+      },
+      {
+        "id": "servants_hall",
+        "name": "The servants' hall",
+        "flavor": "Where the downstairs staff take their meals."
+      },
+      {
+        "id": "drawing_room",
+        "name": "The drawing room",
+        "flavor": "Velvet and a banked hearth, off the foyer."
+      },
+      {
+        "id": "guest_room_1",
+        "name": "Guest room 1",
+        "flavor": "A ground-floor room along the south front."
+      },
+      {
+        "id": "guest_room_2",
+        "name": "Guest room 2",
+        "flavor": "A ground-floor room along the south front."
+      },
+      {
+        "id": "guest_room_3",
+        "name": "Guest room 3",
+        "flavor": "A ground-floor room along the south front."
+      },
+      {
+        "id": "guest_room_4",
+        "name": "Guest room 4",
+        "flavor": "A ground-floor room along the south front."
       }
     ]
   },
@@ -179,7 +309,7 @@
         "type": "eliminate",
         "target": "thorne"
       },
-      "content": "Silas Thorne was locked out all evening \u2014 the servants' door was bolted from within, as the footman attests."
+      "content": "Silas Thorne was locked out all evening — the servants' door was bolted from within, as the footman attests."
     },
     {
       "id": "clue_susp_grimsby",
@@ -242,7 +372,97 @@
         "type": "eliminate",
         "target": "library"
       },
-      "content": "The library hearth was stone cold and the lamps unlit \u2014 the room sat empty all night."
+      "content": "The library hearth was stone cold and the lamps unlit — the room sat empty all night."
+    },
+    {
+      "id": "clue_room_billiard",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "billiard_room"
+      },
+      "content": "The billiard room's baize lay pristine and the balls racked; the footman locked it after the last game at eight."
+    },
+    {
+      "id": "clue_room_dining",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "dining_room"
+      },
+      "content": "The dining room was cleared and shuttered directly after supper; no lamp burned there again that night."
+    },
+    {
+      "id": "clue_room_kitchen",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "kitchen"
+      },
+      "content": "The cook and two maids scrubbed the kitchen until midnight and swear no guest ever crossed the threshold."
+    },
+    {
+      "id": "clue_room_pantry",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "pantry"
+      },
+      "content": "The pantry was bolted from without — its only key hung on the housekeeper's belt, and she never left the servants' table."
+    },
+    {
+      "id": "clue_room_servants",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "servants_hall"
+      },
+      "content": "The whole downstairs staff took their supper together in the servants' hall; every seat was accounted for."
+    },
+    {
+      "id": "clue_room_drawing",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "drawing_room"
+      },
+      "content": "The drawing-room hearth was banked and the doors drawn; the butler attests it sat empty once the guests dispersed."
+    },
+    {
+      "id": "clue_room_guest1",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "guest_room_1"
+      },
+      "content": "Guest Room 1 stood empty all evening — its occupant never arrived from the city."
+    },
+    {
+      "id": "clue_room_guest2",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "guest_room_2"
+      },
+      "content": "Guest Room 2's occupant retired early; the chambermaid heard him snoring through the wall until dawn."
+    },
+    {
+      "id": "clue_room_guest3",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "guest_room_3"
+      },
+      "content": "Guest Room 3 was locked from within — the key was found still turned in the door."
+    },
+    {
+      "id": "clue_room_guest4",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "guest_room_4"
+      },
+      "content": "Guest Room 4 had been shut up for repairs, dust sheets over every surface, undisturbed."
     },
     {
       "id": "clue_priv_poison",
@@ -252,7 +472,7 @@
         "category": "weapon",
         "target": "arsenic"
       },
-      "content": "The physician's private notes record the victim complaining of a bitter tonic and a burning throat \u2014 the hallmarks of poison."
+      "content": "The physician's private notes record the victim complaining of a bitter tonic and a burning throat — the hallmarks of poison."
     },
     {
       "id": "clue_priv_conservatory",
@@ -262,7 +482,7 @@
         "category": "room",
         "target": "conservatory"
       },
-      "content": "Fresh potting soil and a crushed white orchid clung to the victim's cuff \u2014 he died among the hothouse blooms."
+      "content": "Fresh potting soil and a crushed white orchid clung to the victim's cuff — he died among the hothouse blooms."
     },
     {
       "id": "clue_priv_governess",
@@ -280,17 +500,27 @@
       "trigger": "correct_trivia_answer",
       "order": "authored",
       "queue": [
+        "clue_room_billiard",
         "clue_susp_blackwood",
+        "clue_room_dining",
         "clue_wpn_opener",
-        "clue_room_study",
+        "clue_room_kitchen",
         "clue_susp_cordelia",
+        "clue_room_study",
+        "clue_room_pantry",
         "clue_wpn_candlestick",
-        "clue_room_ballroom",
         "clue_susp_crane",
+        "clue_room_servants",
+        "clue_room_drawing",
         "clue_wpn_cravat",
-        "clue_room_library",
         "clue_susp_thorne",
-        "clue_susp_grimsby"
+        "clue_room_ballroom",
+        "clue_room_library",
+        "clue_susp_grimsby",
+        "clue_room_guest1",
+        "clue_room_guest2",
+        "clue_room_guest3",
+        "clue_room_guest4"
       ],
       "note": "Interleaved suspect/weapon/room so the board narrows evenly; no axis solves too early."
     },
@@ -302,20 +532,20 @@
         "clue_priv_conservatory",
         "clue_priv_governess"
       ],
-      "note": "Scarce edges tied to risk \u2014 you braved the Chalice, you found a private lead. Dispensed only when a Killing Floor round actually culled someone."
+      "note": "Scarce edges tied to risk — you braved the Chalice, you found a private lead. Dispensed only when a Killing Floor round actually culled someone."
     }
   },
   "killingFloor": {
     "strikeEvent": {
       "name": "The lights go out across Ravenwood",
-      "flavor": "A scream, a snuffed candle \u2014 everyone is dragged to the Killing Floor at once."
+      "flavor": "A scream, a snuffed candle — everyone is dragged to the Killing Floor at once."
     },
     "minigame": {
       "id": "poisoned_chalice",
       "name": "The Poisoned Chalice",
       "flavor": "Choose a goblet and drink. Some are laced. Survivors return to the investigation; the rest join the dead.",
       "rng": {
-        "note": "SECRET tier \u2014 which goblets are fatal is decided server-side per round; never sent to clients before the choice resolves."
+        "note": "SECRET tier — which goblets are fatal is decided server-side per round; never sent to clients before the choice resolves."
       }
     },
     "resurrection": {
@@ -343,7 +573,7 @@
         "weapon": "arsenic",
         "room": "conservatory"
       },
-      "note": "Eliminating the 5 non-solution suspects, 3 non-solution weapons, and 3 non-solution rooms leaves exactly the solution. 11 public eliminations total; the 3 private clues are edges, not required to solve."
+      "note": "Eliminating the 5 non-solution suspects, 3 non-solution weapons, and 13 non-solution rooms leaves exactly the solution. 21 public eliminations total; the 3 private clues are edges."
     }
   }
 }

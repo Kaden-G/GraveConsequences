@@ -102,7 +102,7 @@ async function main() {
   room = await readRoom(roomId, alice.token);
   ok(room.phase === "briefing", "startGame opens the crime-scene briefing, not trivia");
   ok((room.briefing?.beats || []).length >= 1 && !!room.briefing.title, "the briefing narrative is public on the room doc");
-  ok(!!room.map?.image && Object.keys(room.map.rooms || {}).length === 4, "the floor-plan map (image + 4 room hotspots) is public");
+  ok(!!room.map?.image && Object.keys(room.map.rooms || {}).length === room.board.rooms.length, "the floor-plan map (image + a hotspot per candidate room) is public");
 
   // --- play until solvable (answer correctly every round) ---
   let rounds = 0;
@@ -145,8 +145,8 @@ async function main() {
   ok(room.phase === "finale", "the case became solvable and the finale opened");
   ok(room.solvable === true, "public board narrowed to exactly one per category");
   const clearedCount = ["suspect", "weapon", "room"].reduce((n, c) => n + (room.cleared[c]?.length || 0), 0);
-  ok(clearedCount === 11, `all 11 public eliminations landed on the corkboard (${clearedCount})`);
-  ok((room.reveals || []).length === 11, "11 evidence notes pinned to the board");
+  ok(clearedCount === 21, `all 21 public eliminations landed on the corkboard (${clearedCount})`);
+  ok((room.reveals || []).length === 21, "21 evidence notes pinned to the board");
 
   // --- a wrong accusation is punished; a correct one wins ---
   const wrong = await callFn("makeAccusation", bob.token, { roomId, suspect: "grimsby", weapon: "arsenic", room: "conservatory" });
