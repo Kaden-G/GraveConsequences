@@ -11,6 +11,7 @@ export function loadContent(casePack, triviaPacks) {
     caseId: casePack.meta.id,
     title: casePack.meta.title,
     briefing: casePack.briefing || null, // pre-game crime-scene narrative (public)
+    map: casePack.map || null, // floor-plan image + per-room hotspots (public)
     victim: casePack.board.victim,
     board: {
       suspects: casePack.board.suspects,

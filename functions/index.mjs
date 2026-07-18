@@ -125,6 +125,7 @@ export const createRoom = onCall(async (request) => {
     caseId: publicState.caseId,
     title: publicState.title,
     briefing: publicState.briefing,
+    map: publicState.map,
     victim: publicState.victim,
     board: publicState.board,
     cleared: publicState.cleared,

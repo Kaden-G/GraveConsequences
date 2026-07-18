@@ -99,11 +99,28 @@ function buildBoardOnce(room) {
       el("div", { className: "name" }, w.name),
       el("div", { className: "flavor" }, w.flavor || "")));
   }
-  manor.append(el("div", { className: "plate" }, "Ravenwood Manor"));
-  for (const r of room.board.rooms) {
-    manor.append(el("div", { className: "region", dataset: { id: r.id, region: r.mapRegion || "nw" } },
-      el("div", { className: "rname" }, r.name),
-      el("div", { className: "rflavor" }, r.flavor || "")));
+  if (room.map && room.map.image) {
+    // The illustrated floor plan, with an invisible hotspot over each candidate room
+    // so cleared stamps + red string anchor to the true location on the map.
+    manor.classList.add("manor-photo");
+    manor.append(el("img", { className: "manor-map-img", src: "../" + room.map.image, alt: "Ravenwood Manor floor plan" }));
+    const boxes = room.map.rooms || {};
+    for (const r of room.board.rooms) {
+      const b = boxes[r.id];
+      if (!b) continue;
+      manor.append(el("div", {
+        className: "room-hotspot", dataset: { id: r.id }, title: r.name,
+        style: `left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%`,
+      }));
+    }
+  } else {
+    // Fallback: the CSS-drawn manor grid (rooms as regions).
+    manor.append(el("div", { className: "plate" }, "Ravenwood Manor"));
+    for (const r of room.board.rooms) {
+      manor.append(el("div", { className: "region", dataset: { id: r.id, region: r.mapRegion || "nw" } },
+        el("div", { className: "rname" }, r.name),
+        el("div", { className: "rflavor" }, r.flavor || "")));
+    }
   }
   boardBuilt = true;
 }

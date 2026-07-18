@@ -102,6 +102,7 @@ async function main() {
   room = await readRoom(roomId, alice.token);
   ok(room.phase === "briefing", "startGame opens the crime-scene briefing, not trivia");
   ok((room.briefing?.beats || []).length >= 1 && !!room.briefing.title, "the briefing narrative is public on the room doc");
+  ok(!!room.map?.image && Object.keys(room.map.rooms || {}).length === 4, "the floor-plan map (image + 4 room hotspots) is public");
 
   // --- play until solvable (answer correctly every round) ---
   let rounds = 0;

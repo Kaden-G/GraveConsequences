@@ -42,6 +42,16 @@
       }
     ]
   },
+  "map": {
+    "image": "assets/ravenwood-manor.jpg",
+    "note": "Room hotspots as percentages of the image (x,y = top-left corner; w,h = size). Only the case's candidate rooms need entries; the rest of the manor is atmosphere.",
+    "rooms": {
+      "ballroom": { "x": 34, "y": 6, "w": 30, "h": 24 },
+      "library": { "x": 19.5, "y": 32, "w": 15, "h": 18.5 },
+      "study": { "x": 18.7, "y": 51, "w": 16, "h": 13 },
+      "conservatory": { "x": 4.4, "y": 33, "w": 13, "h": 18 }
+    }
+  },
   "board": {
     "victim": {
       "name": "Lord Edmund Ravenwood",
