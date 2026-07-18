@@ -106,30 +106,32 @@
         "w": 16,
         "h": 13
       },
-      "guest_room_1": {
-        "x": 15,
-        "y": 64,
-        "w": 14,
-        "h": 15
-      },
-      "guest_room_2": {
-        "x": 30,
-        "y": 64,
-        "w": 13,
-        "h": 15
-      },
-      "guest_room_3": {
-        "x": 57,
-        "y": 64,
-        "w": 13,
-        "h": 15
-      },
-      "guest_room_4": {
-        "x": 72,
-        "y": 64,
-        "w": 13,
-        "h": 15
-      }
+      "guest_rooms": [
+        {
+          "x": 15,
+          "y": 64,
+          "w": 14,
+          "h": 15
+        },
+        {
+          "x": 30,
+          "y": 64,
+          "w": 13,
+          "h": 15
+        },
+        {
+          "x": 57,
+          "y": 64,
+          "w": 13,
+          "h": 15
+        },
+        {
+          "x": 72,
+          "y": 64,
+          "w": 13,
+          "h": 15
+        }
+      ]
     }
   },
   "board": {
@@ -189,6 +191,16 @@
         "id": "cravat",
         "name": "Silk cravat",
         "flavor": "Fine enough to strangle with."
+      },
+      {
+        "id": "poker",
+        "name": "Fireplace poker",
+        "flavor": "Cast iron, heavy at the tip."
+      },
+      {
+        "id": "pistol",
+        "name": "Duelling pistol",
+        "flavor": "A gentleman's recourse, kept in a velvet case."
       }
     ],
     "rooms": [
@@ -247,24 +259,9 @@
         "flavor": "Velvet and a banked hearth, off the foyer."
       },
       {
-        "id": "guest_room_1",
-        "name": "Guest room 1",
-        "flavor": "A ground-floor room along the south front."
-      },
-      {
-        "id": "guest_room_2",
-        "name": "Guest room 2",
-        "flavor": "A ground-floor room along the south front."
-      },
-      {
-        "id": "guest_room_3",
-        "name": "Guest room 3",
-        "flavor": "A ground-floor room along the south front."
-      },
-      {
-        "id": "guest_room_4",
-        "name": "Guest room 4",
-        "flavor": "A ground-floor room along the south front."
+        "id": "guest_rooms",
+        "name": "The guest rooms",
+        "flavor": "The ground-floor rooms along the south front."
       }
     ]
   },
@@ -429,42 +426,6 @@
       "content": "The drawing-room hearth was banked and the doors drawn; the butler attests it sat empty once the guests dispersed."
     },
     {
-      "id": "clue_room_guest1",
-      "tier": "public",
-      "effect": {
-        "type": "eliminate",
-        "target": "guest_room_1"
-      },
-      "content": "Guest Room 1 stood empty all evening — its occupant never arrived from the city."
-    },
-    {
-      "id": "clue_room_guest2",
-      "tier": "public",
-      "effect": {
-        "type": "eliminate",
-        "target": "guest_room_2"
-      },
-      "content": "Guest Room 2's occupant retired early; the chambermaid heard him snoring through the wall until dawn."
-    },
-    {
-      "id": "clue_room_guest3",
-      "tier": "public",
-      "effect": {
-        "type": "eliminate",
-        "target": "guest_room_3"
-      },
-      "content": "Guest Room 3 was locked from within — the key was found still turned in the door."
-    },
-    {
-      "id": "clue_room_guest4",
-      "tier": "public",
-      "effect": {
-        "type": "eliminate",
-        "target": "guest_room_4"
-      },
-      "content": "Guest Room 4 had been shut up for repairs, dust sheets over every surface, undisturbed."
-    },
-    {
       "id": "clue_priv_poison",
       "tier": "private",
       "effect": {
@@ -493,6 +454,33 @@
         "target": "marsh"
       },
       "content": "Only one member of the household tended the orchids after dark, alone, every evening."
+    },
+    {
+      "id": "clue_room_guests",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "guest_rooms"
+      },
+      "content": "Every guest room was accounted for — its occupant abed or arrived too late, and the chambermaid attests to each door."
+    },
+    {
+      "id": "clue_wpn_poker",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "poker"
+      },
+      "content": "The fireplace poker hung cold on its hook; the ash on the hearth beneath it lay smooth and undisturbed."
+    },
+    {
+      "id": "clue_wpn_pistol",
+      "tier": "public",
+      "effect": {
+        "type": "eliminate",
+        "target": "pistol"
+      },
+      "content": "Both duelling pistols slept in their velvet case in the gun room, loaded and unfired, the dust on the lid unbroken."
     }
   ],
   "clueDispensing": {
@@ -502,25 +490,24 @@
       "queue": [
         "clue_room_billiard",
         "clue_susp_blackwood",
-        "clue_room_dining",
         "clue_wpn_opener",
-        "clue_room_kitchen",
+        "clue_room_dining",
         "clue_susp_cordelia",
-        "clue_room_study",
-        "clue_room_pantry",
         "clue_wpn_candlestick",
+        "clue_room_kitchen",
+        "clue_room_study",
         "clue_susp_crane",
-        "clue_room_servants",
-        "clue_room_drawing",
         "clue_wpn_cravat",
+        "clue_room_pantry",
+        "clue_room_servants",
         "clue_susp_thorne",
+        "clue_wpn_poker",
+        "clue_room_drawing",
         "clue_room_ballroom",
-        "clue_room_library",
         "clue_susp_grimsby",
-        "clue_room_guest1",
-        "clue_room_guest2",
-        "clue_room_guest3",
-        "clue_room_guest4"
+        "clue_wpn_pistol",
+        "clue_room_library",
+        "clue_room_guests"
       ],
       "note": "Interleaved suspect/weapon/room so the board narrows evenly; no axis solves too early."
     },
@@ -573,7 +560,7 @@
         "weapon": "arsenic",
         "room": "conservatory"
       },
-      "note": "Eliminating the 5 non-solution suspects, 3 non-solution weapons, and 13 non-solution rooms leaves exactly the solution. 21 public eliminations total; the 3 private clues are edges."
+      "note": "Eliminating the 5 non-solution suspects, 5 non-solution weapons, and 10 non-solution rooms leaves exactly the solution. 20 public eliminations total."
     }
   }
 }

@@ -106,10 +106,13 @@ function buildBoardOnce(room) {
     for (const r of room.board.rooms) {
       const b = boxes[r.id];
       if (!b) continue;
-      manor.append(el("div", {
-        className: "room-hotspot", dataset: { id: r.id }, title: r.name,
-        style: `left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%`,
-      }));
+      // A room may map to one box, or several (e.g. the grouped guest rooms).
+      for (const box of Array.isArray(b) ? b : [b]) {
+        manor.append(el("div", {
+          className: "room-hotspot", dataset: { id: r.id }, title: r.name,
+          style: `left:${box.x}%;top:${box.y}%;width:${box.w}%;height:${box.h}%`,
+        }));
+      }
     }
   } else {
     // Fallback: the CSS-drawn manor grid (rooms as regions).

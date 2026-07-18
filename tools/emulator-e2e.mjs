@@ -147,8 +147,8 @@ async function main() {
   ok(room.phase === "finale", "the case became solvable and the finale opened");
   ok(room.solvable === true, "public board narrowed to exactly one per category");
   const clearedCount = ["suspect", "weapon", "room"].reduce((n, c) => n + (room.cleared[c]?.length || 0), 0);
-  ok(clearedCount === 21, `all 21 public eliminations landed on the corkboard (${clearedCount})`);
-  ok((room.reveals || []).length === 21, "21 evidence notes pinned to the board");
+  ok(clearedCount === 20, `all 20 public eliminations landed on the corkboard (${clearedCount})`);
+  ok((room.reveals || []).length === 20, "20 evidence notes pinned to the board");
 
   // --- a wrong accusation is punished; a correct one wins ---
   const wrong = await callFn("makeAccusation", bob.token, { roomId, suspect: "grimsby", weapon: "arsenic", room: "conservatory" });

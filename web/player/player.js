@@ -66,6 +66,7 @@ function renderJoin(err) {
 // ---- in-room render -------------------------------------------------------
 function render() {
   if (!room || !me) return;
+  ensureTracker();
   const fn = views[room.phase] || views.lobby;
   fn();
   lastPhase = room.phase;
@@ -250,6 +251,89 @@ function panel(icon, title, body) {
     el("div", { style: "font-size:3rem" }, icon),
     el("h1", { className: "gaslit" }, title),
     el("p", { className: "panel" }, body));
+}
+
+// ===========================================================================
+// Detective's Notebook — a private, per-player deduction grid (Clue-style).
+// Purely local: marks live in this browser (localStorage), never sent anywhere.
+// Content-driven from room.board, so it matches whatever case is loaded.
+// ===========================================================================
+let trackerBuilt = false;
+const WPN_ICON = { letter_opener: "🗡️", arsenic: "☠️", candlestick: "🕯️", cravat: "👔", poker: "🔥", pistol: "🔫" };
+const firstName = (name) => name.replace(/^(Lord|Lady|Dr\.|Mr\.|Miss|Colonel)\s+/, "").split(" ")[0];
+const nbKey = () => `gc-nb-${roomId}`;
+const nbLoad = () => { try { return JSON.parse(localStorage.getItem(nbKey())) || {}; } catch { return {}; } };
+
+function ensureTracker() {
+  if (trackerBuilt || !room || !me) return;
+  trackerBuilt = true;
+
+  const state = nbLoad();
+  state.cells = state.cells || {};
+  state.rooms = state.rooms || {};
+  const save = () => { try { localStorage.setItem(nbKey(), JSON.stringify(state)); } catch {} };
+  const mark = (node, store, key) => {
+    const next = ((store[key] || 0) + 1) % 3; // blank → ✗ → ✓ → blank
+    if (next) store[key] = next; else delete store[key];
+    node.dataset.mark = next;
+    node.textContent = next === 1 ? "✗" : next === 2 ? "✓" : "";
+    save();
+  };
+
+  const S = room.board.suspects, W = room.board.weapons, R = room.board.rooms;
+
+  // suspect × weapon matrix
+  const head = el("tr", {}, el("th", { className: "nb-corner" }, ""));
+  W.forEach((w) => head.append(el("th", { className: "nb-wh", title: w.name }, WPN_ICON[w.id] || firstName(w.name)[0])));
+  const body = S.map((s) => {
+    const tr = el("tr", {}, el("th", { className: "nb-sh" }, firstName(s.name)));
+    W.forEach((w) => {
+      const key = `${s.id}__${w.id}`;
+      const st = state.cells[key] || 0;
+      const cell = el("td", { className: "nb-cell", dataset: { mark: st } }, st === 1 ? "✗" : st === 2 ? "✓" : "");
+      cell.onclick = () => mark(cell, state.cells, key);
+      tr.append(cell);
+    });
+    return tr;
+  });
+  const table = el("table", { className: "nb-matrix" }, el("thead", {}, head), el("tbody", {}, ...body));
+
+  const legend = el("div", { className: "nb-legend" },
+    ...W.map((w) => el("span", {}, `${WPN_ICON[w.id] || firstName(w.name)[0]} ${w.name}`)));
+
+  // rooms list
+  const roomChips = R.map((r) => {
+    const st = state.rooms[r.id] || 0;
+    const chip = el("button", { className: "nb-room", dataset: { mark: st } },
+      el("span", { className: "nb-room-mk" }, st === 1 ? "✗" : st === 2 ? "✓" : "○"),
+      el("span", {}, r.name));
+    chip.onclick = () => {
+      const next = ((state.rooms[r.id] || 0) + 1) % 3;
+      if (next) state.rooms[r.id] = next; else delete state.rooms[r.id];
+      chip.dataset.mark = next;
+      chip.querySelector(".nb-room-mk").textContent = next === 1 ? "✗" : next === 2 ? "✓" : "○";
+      save();
+    };
+    return chip;
+  });
+
+  const closeBtn = el("button", { className: "nb-close" }, "✕");
+  const overlay = el("div", { className: "nb-overlay hidden" },
+    el("div", { className: "nb-sheet" },
+      el("div", { className: "nb-head" }, el("h2", { className: "gaslit" }, "Detective's Notebook"), closeBtn),
+      el("p", { className: "nb-hint" }, "Tap to cross off (✗) or flag as likely (✓). Private to you."),
+      el("div", { className: "nb-scroll" },
+        el("div", { className: "nb-mtx-wrap" }, table),
+        el("div", { className: "nb-legend-wrap" }, legend),
+        el("h3", { className: "nb-rooms-h" }, "Rooms"),
+        el("div", { className: "nb-rooms" }, ...roomChips))));
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.classList.add("hidden"); });
+  closeBtn.onclick = () => overlay.classList.add("hidden");
+
+  const toggle = el("button", { className: "nb-toggle" }, "🗒 Notebook");
+  toggle.onclick = () => overlay.classList.remove("hidden");
+
+  document.body.append(toggle, overlay);
 }
 
 boot();
